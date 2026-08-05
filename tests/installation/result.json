@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "run_id": "2026-08-05-fb00070-safe-installer-03",
-  "source_commit": "fb00070d59d201154d36d8ba157a199233c66c00",
+  "run_id": "2026-08-05-0d68d71-safe-installer-04",
+  "source_commit": "0d68d71edcc91ba30e4bfb36a9382675de3e7a1f",
   "tested_at": "2026-08-05",
   "passed": true,
   "environment": {
@@ -13,11 +13,11 @@
   "artifacts": {
     "archive_sha256": "c9cf2fbfbfe978930fd2020969c7b2fe69d02d1057e6f73eb0f0b6e9dfe8575f",
     "checksum_sha256": "92590ea6909735f0044dae5f0d38c2428d8a182b90cbf457a24ca9d2e0b5638c",
-    "manifest_sha256": "4b67cdc48845e8af959a7bf5a9d3dd43f544675a1ad65084632f457a7b6be313",
+    "manifest_sha256": "689f74fa89c9239e2b19234a54157c04552eb8202464ee16cf7afe1ee09ee26c",
     "package_tree_sha256": "b9ab93e9954aa77eeaa12a4470fe5da6772c16b35be22944aee7350b84b8ac7f",
     "installed_tree_sha256": "b9ab93e9954aa77eeaa12a4470fe5da6772c16b35be22944aee7350b84b8ac7f",
     "agent_response_sha256": "fd3d572d9bfc5726a43963efa6329ddd8fa46494065046030e45e51a9fa234c9",
-    "installer_python_sha256": "5c2f7cd024a2b7c4b168cf0d0957fdcb0c516e2e19eef641f16d825273cadc4b",
+    "installer_python_sha256": "b7a4d1815778370bf903c5ca9b44ed632e1db27aba4dabf34c45f4ba0cd6d024",
     "installer_powershell_sha256": "268291b91da7b02565651e81602dffad6818ed2b60b291bc5fe4e0160b524529",
     "installer_shell_sha256": "e73eea5b501ea5c174229c7f38cd867bf55015577943807a2b994e8c95304efc"
   },
@@ -29,7 +29,7 @@
     "Matched the source package tree, installed tree, and upgrade-backup tree by canonical SHA-256.",
     "Ran the packaged POSIX shell installer in WSL dry-run mode against the same verified release assets.",
     "Verified path-traversal rejection, installer-tamper rejection, and automatic restoration after an injected post-backup failure through repository-native tests.",
-    "Ran all twenty-six repository-validator, packaging, and installer tests successfully from the clean clone; the Windows symbolic-link creation case was skipped because the host lacks that operating-system privilege.",
+    "Ran all twenty-seven repository-validator, packaging, and installer tests successfully from the clean clone; the Windows symbolic-link creation case was skipped because the host lacks that operating-system privilege.",
     "Ran dependency-free repository validation with zero errors and zero warnings from the clean clone.",
     "Ran the official Skill quick validator against the isolated installed package successfully.",
     "The installed Skill tree is byte-identical to the previously probed v0.2.0-beta tree, so the content-addressed fresh-agent usability response remains applicable."
