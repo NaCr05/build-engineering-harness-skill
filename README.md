@@ -4,7 +4,7 @@
 
 一个面向人类与 AI Agent 协作的软件工程 Skill：审计、建立和改进项目的目标、仓库知识、规则、验证与反馈闭环，并在项目完成后沉淀复盘和新人上手资料。
 
-> 当前状态：`v0.1.0-beta`。三组独立前向测试、GitHub 全新安装验证，以及 Windows/Linux GitHub Actions 均已通过。这是首个 Beta 预发布版，尚不宣称稳定版。
+> 当前状态：`v0.1.1-beta`。三组独立前向测试、GitHub 全新安装验证，以及 Windows/Linux GitHub Actions 均已通过。本版补齐了公开仓库的安全报告与反馈入口，仍是 Beta 预发布版。
 
 ## 它解决什么问题
 
@@ -179,13 +179,13 @@ skill/build-engineering-harness/
 
 `SKILL.md` 是 Codex 实际加载的入口。`SKILL.zh-CN.md` 是供中文读者理解和核对的同步版本。详细方法按需放在 `references/`，可复制的输出模板放在 `assets/`。
 
-## `v0.1.0-beta` 验证证据
+## `v0.1.1-beta` 验证证据
 
 - L1、L2、L3 三组隔离前向测试均通过全部安全门禁，质量评分均为 10/10；原始回答与评分记录位于 [`tests/scenarios/`](tests/scenarios/)。
 - 已从公开 GitHub 仓库全新克隆并安装 Skill，完成文件哈希、仓库验证、官方 Skill 校验及全新 Agent 使用验证；证据见 [`tests/installation/result.json`](tests/installation/result.json)。
 - GitHub Actions 在 Windows 与 Linux 环境中执行验证；标签构建还会额外执行发布证据检查。
 
-这些是可复现的代表性合成场景，不等同于对所有生产仓库的覆盖。`v0.1.0-beta` 应作为预发布版使用，而不是稳定版承诺。
+这些是可复现的代表性合成场景，不等同于对所有生产仓库的覆盖。`v0.1.1-beta` 未改变可安装 Skill 的行为，应作为预发布版使用，而不是稳定版承诺。
 
 ## 参与贡献
 

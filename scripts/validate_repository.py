@@ -18,6 +18,9 @@ SKILL_REL = Path("skill") / SKILL_NAME
 
 REQUIRED_ROOT_PATHS = {
     Path(".gitattributes"),
+    Path(".github/ISSUE_TEMPLATE/bug-report.yml"),
+    Path(".github/ISSUE_TEMPLATE/config.yml"),
+    Path(".github/ISSUE_TEMPLATE/scenario-proposal.yml"),
     Path(".github/pull_request_template.md"),
     Path(".github/workflows/validate.yml"),
     Path(".gitignore"),
@@ -120,6 +123,44 @@ def check_required_paths(root: Path, issues: list[Issue]) -> None:
                 SKILL_REL / rel,
                 "Required installable Skill file is missing.",
             )
+
+
+def check_public_governance(root: Path, issues: list[Issue]) -> None:
+    required_markers = {
+        Path("CHANGELOG.md"): ["## [Unreleased]"],
+        Path("SECURITY.md"): [
+            "private vulnerability reporting form",
+            "/security/advisories/new",
+        ],
+        Path(".github/ISSUE_TEMPLATE/config.yml"): [
+            "blank_issues_enabled: false",
+            "/security/advisories/new",
+        ],
+        Path(".github/ISSUE_TEMPLATE/bug-report.yml"): [
+            "name: Bug report",
+            "body:",
+            "validations:",
+        ],
+        Path(".github/ISSUE_TEMPLATE/scenario-proposal.yml"): [
+            "name: Forward-test scenario proposal",
+            "body:",
+            "validations:",
+        ],
+    }
+    for rel, markers in required_markers.items():
+        path = root / rel
+        if not path.is_file():
+            continue
+        content = read_text(path)
+        for marker in markers:
+            if marker not in content:
+                add_issue(
+                    issues,
+                    "error",
+                    "PUBLIC_GOVERNANCE_DRIFT",
+                    rel,
+                    f"Required public-governance marker is missing: {marker}",
+                )
 
 
 def check_skill_package_contents(root: Path, issues: list[Issue]) -> None:
@@ -577,6 +618,7 @@ def validate_repository(root: Path, release: bool = False) -> list[Issue]:
     root = root.resolve()
     issues: list[Issue] = []
     check_required_paths(root, issues)
+    check_public_governance(root, issues)
     check_skill_package_contents(root, issues)
     check_skill_frontmatter(root, issues)
     check_openai_yaml(root, issues)

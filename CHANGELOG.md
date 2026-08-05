@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+No unreleased changes.
+
+## [0.1.1-beta] - 2026-08-05
+
+### Added
+
+- Structured bug-report and forward-test scenario proposal forms.
+- A private security-report route in the issue chooser.
+
+### Changed
+
+- Updated the security policy with current Beta support and response expectations.
+- Added public repository description and discovery topics.
+
+### Security
+
+- Enabled GitHub private vulnerability reporting.
+
 ## [0.1.0-beta] - 2026-08-05
 
 ### Added

@@ -4,7 +4,7 @@
 
 An engineering Skill for reliable collaboration between humans and AI agents. It audits, establishes, and improves project goals, repository knowledge, rules, verification, and feedback loops, then captures evidence-based retrospective and onboarding knowledge when a project closes.
 
-> Status: `v0.1.0-beta`. Three independent forward tests, a clean installation from GitHub, and Windows/Linux GitHub Actions have passed. This is the first Beta pre-release, not a stable-release claim.
+> Status: `v0.1.1-beta`. Three independent forward tests, a clean installation from GitHub, and Windows/Linux GitHub Actions have passed. This release adds public security-reporting and feedback routes and remains a Beta pre-release.
 
 ## What it solves
 
@@ -167,13 +167,13 @@ skill/build-engineering-harness/
 
 `SKILL.md` is the runtime entry loaded by Codex. `SKILL.zh-CN.md` is a synchronized human-readable Chinese translation. Detailed methods live in `references/`; reusable output templates live in `assets/`.
 
-## `v0.1.0-beta` validation evidence
+## `v0.1.1-beta` validation evidence
 
 - The isolated L1, L2, and L3 forward tests passed every safety gate with 10/10 quality scores. Sanitized responses and scored results live under [`tests/scenarios/`](tests/scenarios/).
 - The Skill was cloned and installed from the public GitHub repository, then checked for file-hash equality, repository validity, official Skill validity, and use by a fresh agent. See [`tests/installation/result.json`](tests/installation/result.json).
 - GitHub Actions validates both Windows and Linux; tag builds additionally run release-evidence validation.
 
-These are reproducible representative synthetic scenarios, not coverage of every production repository. Use `v0.1.0-beta` as a pre-release rather than a stable-release promise.
+These are reproducible representative synthetic scenarios, not coverage of every production repository. `v0.1.1-beta` does not change the installable Skill behavior; use it as a pre-release rather than a stable-release promise.
 
 ## Contributing
 

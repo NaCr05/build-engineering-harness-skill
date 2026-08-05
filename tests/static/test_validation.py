@@ -42,6 +42,24 @@ class RepositoryValidationTests(unittest.TestCase):
         (root / "skill/build-engineering-harness/SKILL.md").unlink()
         self.assertIn("REQUIRED_SKILL_FILE", self.error_codes(root))
 
+    def test_missing_issue_form_is_blocking(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        (root / ".github/ISSUE_TEMPLATE/bug-report.yml").unlink()
+        self.assertIn("REQUIRED_PATH", self.error_codes(root))
+
+    def test_public_governance_drift_is_blocking(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        security = root / "SECURITY.md"
+        security.write_text(
+            security.read_text(encoding="utf-8").replace(
+                "/security/advisories/new", "/issues/new"
+            ),
+            encoding="utf-8",
+        )
+        self.assertIn("PUBLIC_GOVERNANCE_DRIFT", self.error_codes(root))
+
     def test_broken_local_link_is_blocking(self) -> None:
         temporary, root = self.make_copy()
         self.addCleanup(temporary.cleanup)

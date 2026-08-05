@@ -1,0 +1,74 @@
+name: Forward-test scenario proposal
+description: Propose a realistic case that should improve the Skill's evaluation coverage.
+title: "[Scenario]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Scenario proposals should expose a meaningful decision, boundary, or failure mode that the current L1, L2, and L3 fixtures do not cover. Use synthetic or public evidence only.
+
+  - type: dropdown
+    id: maturity
+    attributes:
+      label: Target maturity
+      options:
+        - L1 — Foundation
+        - L2 — Managed
+        - L3 — Agent-intensive
+        - Cross-level or classification decision
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Repository context
+      description: Describe the project type, collaboration model, risk, and why the scenario is realistic.
+    validations:
+      required: true
+
+  - type: textarea
+    id: gap
+    attributes:
+      label: Coverage gap or failure behavior
+      description: Explain what the current scenarios miss and what an inadequate response would do.
+    validations:
+      required: true
+
+  - type: textarea
+    id: prompt
+    attributes:
+      label: Proposed user prompt
+      description: Provide the prompt a fresh agent should receive. Do not include intended answers.
+    validations:
+      required: true
+
+  - type: textarea
+    id: success
+    attributes:
+      label: Expected findings and pass criteria
+      description: State evaluator-only expectations, safety gates, and important proportionality constraints.
+    validations:
+      required: true
+
+  - type: textarea
+    id: fixture
+    attributes:
+      label: Fixture approach
+      description: Explain how the repository can be represented with synthetic or public files and tested without unsafe external actions.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: This proposal contains no private repository content or personal data.
+          required: true
+        - label: The scenario can run without production, paid, destructive, or unauthorized actions.
+          required: true
+        - label: The expected answer can remain hidden from the forward-test agent.
+          required: true

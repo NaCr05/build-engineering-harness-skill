@@ -1,0 +1,91 @@
+name: Bug report
+description: Report incorrect, unsafe, or confusing repository or Skill behavior.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Build Engineering Harness.
+        Do not include credentials, private repository content, personal data, or exploitable security details. Use the private security-report link in the issue chooser for suspected vulnerabilities.
+
+  - type: dropdown
+    id: version
+    attributes:
+      label: Affected version
+      options:
+        - v0.1.1-beta
+        - v0.1.0-beta
+        - main / unreleased
+        - Unknown or other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Skill behavior
+        - Repository knowledge governance
+        - Project closeout
+        - Validator or GitHub Actions
+        - Installation or packaging
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the problem and why it matters.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Provide a sanitized prompt, fixture description, and exact steps. Do not paste private repository content.
+      placeholder: |
+        1. Start from...
+        2. Ask the Skill to...
+        3. Observe...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and evidence
+      description: Include sanitized output, commands actually run, and relevant public file paths or links.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Codex surface, operating system, and any other relevant version information.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I searched existing issues for the same behavior.
+          required: true
+        - label: I removed secrets, personal data, and private repository content.
+          required: true
+        - label: I distinguished checks I ran from behavior I only inspected.
+          required: true
