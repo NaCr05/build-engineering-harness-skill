@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build Engineering Harness"
+  short_description: "Audit, strengthen, and close out engineering repositories"
+  default_prompt: "Use $build-engineering-harness to audit and strengthen this repository with evidence-backed recommendations."
