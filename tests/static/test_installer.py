@@ -16,6 +16,7 @@ from evidence_hashes import canonical_tree_sha256  # noqa: E402
 from install_skill import (  # noqa: E402
     InstallError,
     install_from_assets,
+    validate_file_record,
     validated_archive_members,
 )
 
@@ -98,6 +99,14 @@ class SafeInstallerTests(unittest.TestCase):
             (assets / "install.sh").write_text("tampered\n", encoding="utf-8")
             with self.assertRaisesRegex(InstallError, "Installer size mismatch"):
                 install_from_assets(assets, codex_home, dry_run=True)
+
+    def test_windows_unsafe_manifest_paths_are_rejected_cross_platform(self) -> None:
+        for path in ("folder/file.txt:stream", "CON.txt", "folder/trailing. "):
+            with self.subTest(path=path):
+                with self.assertRaisesRegex(InstallError, "cross-platform safe"):
+                    validate_file_record(
+                        {"path": path, "sha256": "0" * 64, "size": 0}
+                    )
 
 
 if __name__ == "__main__":

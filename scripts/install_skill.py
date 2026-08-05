@@ -23,6 +23,14 @@ DEFAULT_REPOSITORY = "NaCr05/build-engineering-harness-skill"
 VERSION_PATTERN = re.compile(r"v?[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?")
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 INSTALLER_FILES = {"install_skill.py", "install.ps1", "install.sh"}
+WINDOWS_RESERVED_NAMES = {
+    "CON",
+    "PRN",
+    "AUX",
+    "NUL",
+    *(f"COM{number}" for number in range(1, 10)),
+    *(f"LPT{number}" for number in range(1, 10)),
+}
 TEXT_SUFFIXES = {
     ".cfg",
     ".css",
@@ -150,6 +158,15 @@ def validate_file_record(record: object, *, expected_path: str | None = None) ->
     pure = PurePosixPath(path)
     if pure.is_absolute() or ".." in pure.parts or "." in pure.parts:
         raise InstallError("Manifest file path is unsafe.")
+    for part in pure.parts:
+        base_name = part.split(".", 1)[0].upper()
+        if (
+            "\x00" in part
+            or ":" in part
+            or part.endswith((" ", "."))
+            or base_name in WINDOWS_RESERVED_NAMES
+        ):
+            raise InstallError("Manifest file path is not cross-platform safe.")
     if expected_path is not None and path != expected_path:
         raise InstallError("Manifest file path does not match its expected location.")
     if not isinstance(digest, str) or not SHA256_PATTERN.fullmatch(digest):
@@ -324,8 +341,14 @@ def install_from_assets(
             "mode": "dry-run",
         }
 
+    is_junction = getattr(skills_dir, "is_junction", lambda: False)
+    if skills_dir.is_symlink() or is_junction():
+        raise InstallError("The Codex skills directory must not be a link or junction.")
     skills_dir.mkdir(parents=True, exist_ok=True)
-    if target.exists() and (target.is_symlink() or not target.is_dir()):
+    target_is_junction = getattr(target, "is_junction", lambda: False)
+    if target.is_symlink() or target_is_junction() or (
+        target.exists() and not target.is_dir()
+    ):
         raise InstallError("Existing Skill target must be a real directory.")
 
     package_root = extract_verified_archive(archive_path, manifest, staging)
