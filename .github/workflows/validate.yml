@@ -37,6 +37,10 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Enforce append-only forward-test history
+        if: github.event_name == 'pull_request'
+        run: python scripts/check_append_only_runs.py --base-ref origin/${{ github.base_ref }}
+
       - name: Test the validator
         run: python -m unittest discover -s tests/static -v
 
@@ -45,6 +49,21 @@ jobs:
 
       - name: Build deterministic release package
         run: python scripts/build_release_package.py --output-dir .test-runs/release-package --source-commit ${{ github.sha }}
+
+      - name: Smoke-test PowerShell safe installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $version = "v$((Get-Content VERSION -Raw).Trim())"
+          & .test-runs/release-package/install.ps1 -Version $version -AssetDir .test-runs/release-package -CodexHome .test-runs/isolated-codex-home -DryRun
+
+      - name: Smoke-test POSIX safe installer
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="v$(tr -d '\r\n' < VERSION)"
+          sh .test-runs/release-package/install.sh --version "$version" --asset-dir .test-runs/release-package --codex-home .test-runs/isolated-codex-home --dry-run
 
       - name: Upload release package
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -129,7 +148,7 @@ jobs:
       - name: Attest release assets
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
-          subject-path: dist/build-engineering-harness-v*
+          subject-path: dist/*
 
       - name: Create or refresh draft release
         env:

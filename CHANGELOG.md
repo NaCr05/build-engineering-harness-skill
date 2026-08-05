@@ -6,6 +6,27 @@ All notable changes to this project will be documented in this file.
 
 No unreleased changes.
 
+## [0.3.1-beta] - 2026-08-05
+
+### Added
+
+- Evaluation Schema v2 with runner, model, timing, usage, evaluator, rubric, per-dimension rationale, and explicit unknown-value provenance.
+- Domain-separated agent-input and evaluator-input bundle hashes with deterministic recomputation.
+- Append-only scenario run directories and pull-request enforcement that rejects edits or deletion of committed run history.
+- Dependency-free PowerShell, POSIX shell, and Python safe installers with dry-run support.
+- Isolated tests for fresh installation, verified upgrade backups, path traversal rejection, installer tampering, and automatic rollback.
+
+### Changed
+
+- Release manifests now bind all three installer assets and all six release assets are compared byte for byte across Windows and Linux.
+- Existing L1, L2, and L3 evidence was migrated without rewriting raw responses; unavailable historical telemetry is recorded as unknown rather than inferred.
+- Release attestation now covers the ZIP, checksum, manifest, and every installer asset.
+
+### Security
+
+- Installation verifies the archive checksum, manifest schema, installer hashes, exact archive layout, every packaged file, and the canonical package tree before replacing a Skill target.
+- Upgrades preserve the previous Skill directory under a unique backup path and restore it automatically if replacement fails.
+
 ## [0.3.0-beta] - 2026-08-05
 
 ### Added

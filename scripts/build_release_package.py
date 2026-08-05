@@ -12,6 +12,7 @@ from pathlib import Path
 
 from evidence_hashes import (
     canonical_bytes,
+    canonical_file_sha256,
     canonical_tree_sha256,
     raw_file_sha256,
     tree_records,
@@ -22,6 +23,12 @@ SKILL_NAME = "build-engineering-harness"
 VERSION_PATTERN = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?")
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 PACKAGE_INPUTS = ("VERSION", f"skill/{SKILL_NAME}")
+INSTALLER_INPUTS = (
+    "scripts/install_skill.py",
+    "scripts/install.ps1",
+    "scripts/install.sh",
+)
+PACKAGE_INPUTS += INSTALLER_INPUTS
 
 
 def read_version(root: Path) -> str:
@@ -121,6 +128,24 @@ def build_release_artifacts(
     archive_path = output_dir / f"{base_name}.zip"
     checksum_path = output_dir / f"{base_name}.zip.sha256"
     manifest_path = output_dir / f"{base_name}.manifest.json"
+    installer_paths: list[Path] = []
+    installer_records: list[dict[str, str | int]] = []
+
+    for relative in INSTALLER_INPUTS:
+        source = root / relative
+        if not source.is_file():
+            raise ValueError(f"Installer source is missing: {relative}")
+        destination = output_dir / source.name
+        data = canonical_bytes(source)
+        destination.write_bytes(data)
+        installer_paths.append(destination)
+        installer_records.append(
+            {
+                "path": destination.name,
+                "sha256": canonical_file_sha256(destination),
+                "size": len(data),
+            }
+        )
 
     with zipfile.ZipFile(
         archive_path,
@@ -145,7 +170,7 @@ def build_release_artifacts(
     )
 
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "name": SKILL_NAME,
         "version": version,
         "source_commit": source_commit,
@@ -160,6 +185,7 @@ def build_release_artifacts(
             "file_count": len(records),
             "files": records,
         },
+        "installers": installer_records,
     }
     manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
@@ -176,6 +202,10 @@ def build_release_artifacts(
         "manifest": manifest_path,
         "manifest_sha256": raw_file_sha256(manifest_path),
         "package_tree_sha256": canonical_tree_sha256(skill_root),
+        "installers": installer_paths,
+        "installer_hashes": {
+            path.name: raw_file_sha256(path) for path in installer_paths
+        },
     }
 
 
@@ -209,6 +239,9 @@ def main() -> int:
     print(f"Archive SHA-256: {artifacts['archive_sha256']}")
     print(f"Checksum: {artifacts['checksum']}")
     print(f"Manifest: {artifacts['manifest']}")
+    print("Installers:")
+    for installer in artifacts["installers"]:
+        print(f"  {installer}")
     print(f"Package tree SHA-256: {artifacts['package_tree_sha256']}")
     return 0
 

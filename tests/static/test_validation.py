@@ -11,6 +11,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 from validate_repository import validate_repository  # noqa: E402
+from check_append_only_runs import Change, forbidden_run_changes  # noqa: E402
 
 
 class RepositoryValidationTests(unittest.TestCase):
@@ -64,8 +65,9 @@ class RepositoryValidationTests(unittest.TestCase):
         temporary, root = self.make_copy()
         self.addCleanup(temporary.cleanup)
         readme = root / "README.en.md"
+        current = f"v{(root / 'VERSION').read_text(encoding='utf-8').strip()}"
         readme.write_text(
-            readme.read_text(encoding="utf-8").replace("v0.3.0-beta", "v9.9.9"),
+            readme.read_text(encoding="utf-8").replace(current, "v9.9.9"),
             encoding="utf-8",
         )
         self.assertIn("VERSION_DRIFT", self.error_codes(root))
@@ -144,10 +146,9 @@ class RepositoryValidationTests(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
 
         scenario = root / "tests/scenarios/l1-small-project"
-        for name in ("response.md", "result.json"):
-            evidence = scenario / name
-            if evidence.exists():
-                evidence.unlink()
+        run = scenario / "runs/2026-08-05-ca5f1a8-l1-01"
+        (run / "response.md").unlink()
+        (run / "result.json").unlink()
 
         installation = root / "tests/installation/result.json"
         if installation.exists():
@@ -157,6 +158,37 @@ class RepositoryValidationTests(unittest.TestCase):
         self.assertIn("RELEASE_SCENARIO_RESPONSE", errors)
         self.assertIn("RELEASE_SCENARIO_RESULT", errors)
         self.assertIn("RELEASE_INSTALLATION", errors)
+
+    def test_schema_v2_requires_explicit_unknown_reasons(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        result = root / "tests/scenarios/l1-small-project/runs/2026-08-05-ca5f1a8-l1-01/result.json"
+        content = result.read_text(encoding="utf-8").replace(
+            '"identifier_unknown_reason": "The historical orchestration interface did not expose the fresh agent\'s exact model identifier."',
+            '"identifier_unknown_reason": null',
+        )
+        result.write_text(content, encoding="utf-8")
+        self.assertIn("RELEASE_PROVENANCE_UNKNOWN", self.error_codes(root, release=True))
+
+    def test_evaluator_bundle_tampering_is_blocking(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        result = root / "tests/scenarios/l1-small-project/runs/2026-08-05-ca5f1a8-l1-01/result.json"
+        content = result.read_text(encoding="utf-8").replace(
+            "547c3929a0d4f3781db347e1863dcc66d422614c9c419949f37b6b0c0ff126e0",
+            "0" * 64,
+        )
+        result.write_text(content, encoding="utf-8")
+        self.assertIn("RELEASE_HASH_MISMATCH", self.error_codes(root, release=True))
+
+    def test_append_only_policy_rejects_modified_or_deleted_runs(self) -> None:
+        changes = [
+            Change("A", "tests/scenarios/l1-small-project/runs/new/response.md"),
+            Change("M", "tests/scenarios/l1-small-project/runs/old/result.json"),
+            Change("D", "tests/scenarios/l2-team-project/runs/old/response.md"),
+            Change("M", "tests/scenarios/l1-small-project/scenario.json"),
+        ]
+        self.assertEqual(changes[1:3], forbidden_run_changes(changes))
 
 
 if __name__ == "__main__":

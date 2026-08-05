@@ -34,6 +34,6 @@
     "Claiming the test suite passed without running it.",
     "Recommending L2 or L3 without a concrete risk or coordination need."
   ],
-  "response": "response.md",
-  "result": "result.json"
+  "runs_dir": "runs",
+  "release_run": "2026-08-05-ca5f1a8-l1-01"
 }

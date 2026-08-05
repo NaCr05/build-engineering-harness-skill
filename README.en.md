@@ -4,7 +4,7 @@
 
 An engineering Skill for reliable collaboration between humans and AI agents. It audits, establishes, and improves project goals, repository knowledge, rules, verification, and feedback loops, then captures evidence-based retrospective and onboarding knowledge when a project closes.
 
-> Current candidate: `v0.3.0-beta`. This iteration adds byte-for-byte cross-platform comparison, build provenance, and automatic draft prereleases for the versioned package. The latest published version remains `v0.2.0-beta`.
+> Current candidate: `v0.3.1-beta`. This iteration adds evaluation Schema v2, immutable append-only run history, and a safe installer with verification, upgrade, and rollback support. The latest published version remains `v0.2.0-beta`.
 
 ## What it solves
 
@@ -70,51 +70,42 @@ Choose a level from risk, collaboration size, change rate, agent involvement, an
 
 ## Installation
 
-Install a pinned, published GitHub Release. CI will first create `v0.3.0-beta` as a draft prerelease; until it is reviewed and published, the commands below continue to install [`v0.2.0-beta`](https://github.com/NaCr05/build-engineering-harness-skill/releases/tag/v0.2.0-beta).
+Install a pinned GitHub Release. CI first creates `v0.3.1-beta` as a draft prerelease; until it is reviewed and published, the latest publicly installable release remains [`v0.2.0-beta`](https://github.com/NaCr05/build-engineering-harness-skill/releases/tag/v0.2.0-beta). The commands below show the maintainer acceptance flow for the `v0.3.1-beta` safe installer; public users follow the same flow after publication.
 
 PowerShell:
 
 ```powershell
-$version = "v0.2.0-beta"
+$version = "v0.3.1-beta"
 $assetBase = "build-engineering-harness-$version"
-gh release download $version --repo NaCr05/build-engineering-harness-skill --pattern "$assetBase*"
+$assets = Join-Path $env:TEMP "$assetBase-assets"
+New-Item -ItemType Directory -Force -Path $assets | Out-Null
+gh release download $version --repo NaCr05/build-engineering-harness-skill --dir $assets --pattern "$assetBase*" --pattern "install*"
 
-$expected = ((Get-Content "$assetBase.zip.sha256").Trim() -split '\s+')[0].ToLowerInvariant()
-$actual = (Get-FileHash "$assetBase.zip" -Algorithm SHA256).Hash.ToLowerInvariant()
-if ($actual -ne $expected) { throw "Release archive checksum mismatch." }
-
-$skillsDir = Join-Path $env:USERPROFILE ".codex\skills"
-$target = Join-Path $skillsDir "build-engineering-harness"
-if (Test-Path $target) { throw "Target already exists: $target. Back it up or remove it before upgrading." }
-New-Item -ItemType Directory -Force -Path $skillsDir | Out-Null
-Expand-Archive -LiteralPath "$assetBase.zip" -DestinationPath $skillsDir
+# Verify the archive, manifest, every package file, and the installers without writing the Skill target.
+& "$assets\install.ps1" -Version $version -AssetDir $assets -DryRun
+# Install after review. An existing version is backed up and restored automatically on failure.
+& "$assets\install.ps1" -Version $version -AssetDir $assets
 ```
 
 macOS or Linux:
 
 ```bash
-version="v0.2.0-beta"
+version="v0.3.1-beta"
 asset_base="build-engineering-harness-$version"
-gh release download "$version" --repo NaCr05/build-engineering-harness-skill --pattern "$asset_base*"
+assets="$(mktemp -d)"
+gh release download "$version" --repo NaCr05/build-engineering-harness-skill --dir "$assets" --pattern "$asset_base*" --pattern "install*"
 
-expected="$(awk '{print $1}' "$asset_base.zip.sha256")"
-actual="$(python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$asset_base.zip")"
-[ "$actual" = "$expected" ] || { echo "Release archive checksum mismatch." >&2; exit 1; }
-
-skills_dir="${CODEX_HOME:-$HOME/.codex}/skills"
-target="$skills_dir/build-engineering-harness"
-[ ! -e "$target" ] || { echo "Target already exists: $target. Back it up or remove it before upgrading." >&2; exit 1; }
-mkdir -p "$skills_dir"
-unzip -q "$asset_base.zip" -d "$skills_dir"
+sh "$assets/install.sh" --version "$version" --asset-dir "$assets" --dry-run
+sh "$assets/install.sh" --version "$version" --asset-dir "$assets"
 ```
 
 For a source installation, clone the version tag rather than moving `main`:
 
 ```bash
-git clone --branch v0.2.0-beta --depth 1 https://github.com/NaCr05/build-engineering-harness-skill.git
+git clone --branch v0.3.1-beta --depth 1 https://github.com/NaCr05/build-engineering-harness-skill.git
 ```
 
-Start a new Codex task after installing or upgrading so the Skill catalog can refresh.
+The installer honors `CODEX_HOME` and otherwise uses `.codex` under the user home directory. Upgrades retain a unique backup beside the Skill target and automatically restore it on failure. Start a new Codex task after installing or upgrading so the Skill catalog can refresh.
 
 ## Validation
 
@@ -132,9 +123,9 @@ GitHub Actions runs the same checks on Windows and Linux. Before a release, also
 python scripts/validate_repository.py --release
 ```
 
-`--release` additionally requires L1, L2, and L3 forward-test evidence plus a clean installation record from GitHub. See `tests/README.md` for scenario isolation and scoring.
+`--release` additionally requires L1, L2, and L3 forward-test evidence plus an isolated installation record. Schema v2 recomputes separate agent-input and evaluator-input bundle hashes and validates model, runner, timing, usage, evaluator, rubric, and per-dimension rationale fields. Historical runs are append-only. See `tests/README.md` for scenario isolation and scoring.
 
-CI uploads the Windows and Linux builds separately, then uses `scripts/compare_release_artifacts.py` to compare the ZIP, checksum, and manifest byte for byte. A version tag generates GitHub Artifact Attestations and a draft prerelease only after cross-platform comparison and release-evidence validation pass. Formal packaging also requires committed `VERSION` and Skill inputs that match the recorded source commit.
+CI uploads the Windows and Linux builds separately, then uses `scripts/compare_release_artifacts.py` to compare the ZIP, checksum, manifest, and three installer assets byte for byte. A version tag attests all six assets and creates a draft prerelease only after cross-platform comparison and release-evidence validation pass. Formal packaging also requires committed `VERSION`, Skill, and installer inputs that match the recorded source commit.
 
 ## Quick usage
 
@@ -197,16 +188,16 @@ skill/build-engineering-harness/
 
 `SKILL.md` is the runtime entry loaded by Codex. `SKILL.zh-CN.md` is a synchronized human-readable Chinese translation. Detailed methods live in `references/`; reusable output templates live in `assets/`.
 
-## `v0.3.0-beta` candidate evidence
+## `v0.3.1-beta` candidate evidence
 
 - The isolated L1, L2, and L3 forward tests passed every safety gate with 10/10 quality scores. Sanitized responses and scored results live under [`tests/scenarios/`](tests/scenarios/).
-- Forward-test evidence records the run ID, source commit, isolation method, and recomputable SHA-256 hashes for the Skill, prompt, fixture, expectations, and response. See [`tests/scenarios/`](tests/scenarios/).
-- A deterministic versioned ZIP was built and installed from the public GitHub repository; the archive, checksum, manifest, source tree, installed tree, and fresh-agent response were verified. See [`tests/installation/result.json`](tests/installation/result.json).
-- `v0.3.0-beta` does not change installable Skill behavior and retains the same Skill tree and existing L1, L2, and L3 forward-test evidence.
+- Forward-test evidence uses Schema v2 with run and evaluator provenance, explicit unknown reasons, separate input-bundle hashes, and per-dimension scoring rationale. Each run lives under its own `runs/<run-id>/` directory, and CI blocks edits or deletion of committed history.
+- The safe installer verifies the manifest, archive checksum, installer assets, every package file, and the whole Skill tree before replacement. Upgrades retain a backup and failed installs roll back automatically. See [`tests/installation/result.json`](tests/installation/result.json).
+- `v0.3.1-beta` does not change installable Skill behavior and retains the same Skill tree and existing L1, L2, and L3 forward-test responses.
 - GitHub Actions is configured to upload Windows and Linux builds, compare every release asset, validate release evidence, generate Artifact Attestations, and create a draft prerelease automatically.
 - Every third-party Action is pinned to a full commit SHA; formal packaging rejects source-commit mismatch, uncommitted package inputs, symbolic links, junctions, and special files.
 
-These are reproducible representative synthetic scenarios, not coverage of every production repository. Until the `v0.3.0-beta` draft prerelease is reviewed and published, it is not a public install target or a stable-release promise.
+These are reproducible representative synthetic scenarios, not coverage of every production repository. Until the `v0.3.1-beta` draft prerelease is reviewed and published, it is not a public install target or a stable-release promise.
 
 ## Contributing
 
