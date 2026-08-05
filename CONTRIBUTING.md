@@ -43,6 +43,10 @@ python scripts/build_release_package.py --output-dir .test-runs/release-package
 
 Before tagging a release, run `python scripts/validate_repository.py --release`.
 
+Formal package builds require a real source commit that is HEAD or an ancestor of HEAD. `VERSION` and `skill/build-engineering-harness/` must be committed and byte-equivalent to that source commit. Symbolic links, junctions, and special files are forbidden in hashed or packaged trees.
+
+GitHub Actions uploads the independently built Windows and Linux packages and runs `scripts/compare_release_artifacts.py` before any tag can advance to release validation. A passing version tag produces attestations and a draft prerelease for maintainer review; do not replace those assets with a separate local build.
+
 If the Codex `skill-creator` validator is available, run it as an additional compatibility check against `skill/build-engineering-harness`.
 
 Also confirm:
@@ -52,6 +56,7 @@ Also confirm:
 - the English and Chinese entry documents remain behaviorally aligned;
 - no secret, personal path, private project name, or confidential content is present;
 - the change does not weaken approval, safety, or product-code boundaries.
+- every external GitHub Action remains pinned to a full commit SHA.
 
 Forward tests must use fresh tasks and disposable synthetic or public repositories. Pass raw fixtures rather than intended answers, and do not disclose evaluator expectations to the agent. Follow `tests/README.md`.
 

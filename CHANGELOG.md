@@ -6,6 +6,27 @@ All notable changes to this project will be documented in this file.
 
 No unreleased changes.
 
+## [0.3.0-beta] - 2026-08-05
+
+### Added
+
+- Cross-platform release-artifact uploads and byte-for-byte comparison in GitHub Actions.
+- GitHub build-provenance attestations for tagged release assets.
+- Automatic draft prerelease creation after tag validation and attestation.
+- Negative tests for source-commit mismatch, unpinned Actions, missing attestation, artifact divergence, and symbolic links.
+
+### Changed
+
+- Every third-party GitHub Action is pinned to a full commit SHA.
+- Release packaging now requires an existing source commit that is HEAD or an ancestor of HEAD and exactly matches committed package inputs.
+- Skill packaging and canonical tree hashing now reject symbolic links, junctions, and unsupported special files.
+- Tagged releases consume the same Linux artifact that passed cross-platform comparison rather than rebuilding an untracked local copy.
+
+### Security
+
+- The release workflow now produces verifiable build provenance and keeps generated prereleases in draft state for maintainer review.
+- Repository branch and version-tag rulesets protect required checks and immutable release references.
+
 ## [0.2.0-beta] - 2026-08-05
 
 ### Added

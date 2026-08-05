@@ -4,7 +4,7 @@
 
 一个面向人类与 AI Agent 协作的软件工程 Skill：审计、建立和改进项目的目标、仓库知识、规则、验证与反馈闭环，并在项目完成后沉淀复盘和新人上手资料。
 
-> 当前状态：`v0.2.0-beta`。测试证据已绑定运行溯源和可复算哈希，并提供带校验和与清单的版本化安装包。本版仍是 Beta 预发布版。
+> 当前候选版本：`v0.3.0-beta`。本轮为版本化安装包增加跨平台逐字节比较、构建来源证明和自动 Draft Prerelease；最新已公开版本仍是 `v0.2.0-beta`。
 
 ## 它解决什么问题
 
@@ -82,7 +82,7 @@ Skill 不会把普通的评估请求理解成写入许可，也不会因为偏�
 
 ## 安装
 
-推荐从 GitHub Release 安装固定版本。以下命令需要 GitHub CLI；也可以在 [`v0.2.0-beta` Release](https://github.com/NaCr05/build-engineering-harness-skill/releases/tag/v0.2.0-beta) 页面手动下载同名的 ZIP、`.sha256` 和 manifest 文件。
+推荐从已公开的 GitHub Release 安装固定版本。`v0.3.0-beta` 会先由 CI 创建为 Draft Prerelease，完成人工核对并公开前，以下命令继续安装 [`v0.2.0-beta`](https://github.com/NaCr05/build-engineering-harness-skill/releases/tag/v0.2.0-beta)。
 
 PowerShell：
 
@@ -146,6 +146,8 @@ python scripts/validate_repository.py --release
 
 `--release` 额外要求 L1、L2、L3 前向测试证据和从 GitHub 全新安装的验证记录。场景设计、隔离方法和评分规则见 `tests/README.md`。
 
+CI 会分别上传 Windows 与 Linux 构建结果，再使用 `scripts/compare_release_artifacts.py` 逐字节比较 ZIP、校验文件和 manifest。版本标签只有在跨平台比较和发布证据都通过后，才会为资产生成 GitHub Artifact Attestation 并创建 Draft Prerelease。正式打包还要求 `VERSION` 与 Skill 包内容已经提交，并与给定来源提交一致。
+
 ## 快速使用
 
 ### 现有项目体检
@@ -203,14 +205,16 @@ skill/build-engineering-harness/
 
 `SKILL.md` 是 Codex 实际加载的入口。`SKILL.zh-CN.md` 是供中文读者理解和核对的同步版本。详细方法按需放在 `references/`，可复制的输出模板放在 `assets/`。
 
-## `v0.2.0-beta` 验证证据
+## `v0.3.0-beta` 候选版验证证据
 
 - L1、L2、L3 三组隔离前向测试均通过全部安全门禁，质量评分均为 10/10；原始回答与评分记录位于 [`tests/scenarios/`](tests/scenarios/)。
 - 前向测试证据记录运行 ID、源提交、隔离方式及 Skill、Prompt、Fixture、预期、响应的可复算 SHA-256；证据见 [`tests/scenarios/`](tests/scenarios/)。
 - 已从公开 GitHub 仓库构建并安装确定性版本化 ZIP，核对归档、校验和、manifest、源目录、安装目录和全新 Agent 响应；证据见 [`tests/installation/result.json`](tests/installation/result.json)。
-- GitHub Actions 在 Windows 与 Linux 环境执行验证和打包；标签构建还会额外执行发布证据检查。
+- `v0.3.0-beta` 不改变可安装 Skill 的行为，继续使用同一 Skill 目录树和已有 L1、L2、L3 前向测试证据。
+- GitHub Actions 已配置为上传 Windows 与 Linux 构建、比较全部发布资产、验证发布证据、生成 Artifact Attestation，并自动创建 Draft Prerelease。
+- 所有第三方 Actions 均固定到完整提交 SHA；正式打包拒绝来源提交不匹配、未提交的包输入、符号链接、目录联接和特殊文件。
 
-这些是可复现的代表性合成场景，不等同于对所有生产仓库的覆盖。`v0.2.0-beta` 未改变可安装 Skill 的行为，应作为预发布版使用，而不是稳定版承诺。
+这些是可复现的代表性合成场景，不等同于对所有生产仓库的覆盖。`v0.3.0-beta` 在 Draft Prerelease 经过人工核对并公开前，不是可安装的公开版本或稳定版承诺。
 
 ## 参与贡献
 

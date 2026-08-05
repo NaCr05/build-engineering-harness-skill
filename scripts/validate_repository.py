@@ -14,7 +14,7 @@ from typing import Iterable
 from urllib.parse import unquote
 
 from build_release_package import build_release_artifacts
-from evidence_hashes import canonical_file_sha256, canonical_tree_sha256
+from evidence_hashes import canonical_file_sha256, canonical_tree_sha256, iter_tree_files
 
 
 SKILL_NAME = "build-engineering-harness"
@@ -36,6 +36,7 @@ REQUIRED_ROOT_PATHS = {
     Path("SECURITY.md"),
     Path("VERSION"),
     Path("scripts/build_release_package.py"),
+    Path("scripts/compare_release_artifacts.py"),
     Path("scripts/evidence_hashes.py"),
     Path("scripts/validate_repository.py"),
     Path("tests/static/test_packaging.py"),
@@ -214,12 +215,17 @@ def check_skill_package_contents(root: Path, issues: list[Issue]) -> None:
     if not skill_root.is_dir():
         return
 
-    actual = {
-        path.relative_to(skill_root)
-        for path in skill_root.rglob("*")
-        if path.is_file()
-        and not any(part in SKIP_DIRS for part in path.relative_to(skill_root).parts)
-    }
+    try:
+        actual = {path.relative_to(skill_root) for path in iter_tree_files(skill_root)}
+    except ValueError as exc:
+        add_issue(
+            issues,
+            "error",
+            "UNSAFE_SKILL_TREE",
+            SKILL_REL,
+            str(exc),
+        )
+        return
     for rel in sorted(actual - REQUIRED_SKILL_FILES):
         add_issue(
             issues,
@@ -228,6 +234,41 @@ def check_skill_package_contents(root: Path, issues: list[Issue]) -> None:
             SKILL_REL / rel,
             "Installable Skill contains an undeclared file.",
         )
+
+
+def check_trusted_release_workflow(root: Path, issues: list[Issue]) -> None:
+    rel = Path(".github/workflows/validate.yml")
+    path = root / rel
+    if not path.is_file():
+        return
+    content = read_text(path)
+    required_markers = {
+        "actions/upload-artifact@": "CI must upload independently built release artifacts.",
+        "actions/download-artifact@": "CI must download release artifacts for comparison and release.",
+        "actions/attest@": "Tagged release archives must receive a GitHub artifact attestation.",
+        "compare_release_artifacts.py": "CI must compare Windows and Linux release artifacts.",
+        "attestations: write": "The release job needs permission to publish attestations.",
+        "id-token: write": "The release job needs OIDC permission for attestations.",
+        "--draft": "Tag automation must create a draft release.",
+        "--prerelease": "Tag automation must mark Beta releases as prereleases.",
+        "fetch-depth: 0": "Source-commit verification requires complete Git history.",
+    }
+    for marker, message in required_markers.items():
+        if marker not in content:
+            add_issue(issues, "error", "TRUSTED_RELEASE_WORKFLOW", rel, message)
+
+    for line_number, line in enumerate(content.splitlines(), start=1):
+        match = re.match(r"^\s*uses:\s*([^@\s]+)@([^\s#]+)", line)
+        if not match or match.group(1).startswith("./"):
+            continue
+        if not COMMIT_PATTERN.fullmatch(match.group(2)):
+            add_issue(
+                issues,
+                "error",
+                "UNPINNED_ACTION",
+                rel,
+                f"Line {line_number} must pin the action to a full commit SHA.",
+            )
 
 
 def parse_frontmatter(content: str) -> tuple[dict[str, str], str] | None:
@@ -738,7 +779,9 @@ def check_installation_provenance(
         return
 
     with tempfile.TemporaryDirectory() as directory:
-        built = build_release_artifacts(root, Path(directory), source_commit)
+        built = build_release_artifacts(
+            root, Path(directory), source_commit, verify_source=False
+        )
         current_tree = str(built["package_tree_sha256"])
         hash_targets = {
             "archive_sha256": str(built["archive_sha256"]),
@@ -871,6 +914,7 @@ def validate_repository(root: Path, release: bool = False) -> list[Issue]:
     check_public_governance(root, issues)
     check_version_consistency(root, issues)
     check_skill_package_contents(root, issues)
+    check_trusted_release_workflow(root, issues)
     check_skill_frontmatter(root, issues)
     check_openai_yaml(root, issues)
     check_markdown_links(root, issues)
