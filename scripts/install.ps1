@@ -13,9 +13,17 @@ if (-not (Test-Path -LiteralPath $installer -PathType Leaf)) {
     throw "Missing sibling installer: $installer"
 }
 
-$python = Get-Command python3 -ErrorAction SilentlyContinue
-if (-not $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
-if (-not $python) { throw "Python 3 is required." }
+$python = $null
+foreach ($name in @("python", "python3")) {
+    $candidate = Get-Command $name -ErrorAction SilentlyContinue
+    if (-not $candidate) { continue }
+    & $candidate.Source --version *> $null
+    if ($LASTEXITCODE -eq 0) {
+        $python = $candidate
+        break
+    }
+}
+if (-not $python) { throw "A working Python 3 interpreter is required." }
 
 $arguments = @($installer, "--repo", $Repository)
 if ($Version) { $arguments += @("--version", $Version) }

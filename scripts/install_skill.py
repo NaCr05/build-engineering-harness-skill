@@ -309,8 +309,8 @@ def install_from_assets(
 
     skills_dir = codex_home.resolve() / "skills"
     target = skills_dir / SKILL_NAME
-    staging = skills_dir / f".{SKILL_NAME}-stage-{uuid.uuid4().hex}"
-    backup = skills_dir / f".{SKILL_NAME}-backup-{uuid.uuid4().hex}"
+    staging = skills_dir / f".beh-stage-{uuid.uuid4().hex[:12]}"
+    backup = skills_dir / f".beh-backup-{uuid.uuid4().hex[:12]}"
 
     if dry_run:
         with tempfile.TemporaryDirectory() as directory:
