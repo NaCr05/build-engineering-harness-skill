@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "run_id": "2026-08-05-0ea3b60-trusted-zip-01",
-  "source_commit": "0ea3b606a0b9a83255019c06fdd94898c562e24d",
+  "run_id": "2026-08-05-8df297f-trusted-zip-02",
+  "source_commit": "8df297f13ca695eaad560ce9635010e89e8e4c69",
   "tested_at": "2026-08-05",
   "passed": true,
   "environment": {
@@ -13,7 +13,7 @@
   "artifacts": {
     "archive_sha256": "c9cf2fbfbfe978930fd2020969c7b2fe69d02d1057e6f73eb0f0b6e9dfe8575f",
     "checksum_sha256": "f0781b3e7997134dbfe90f095e11311d109a4da3508a6ef9b59031c9fc3e0710",
-    "manifest_sha256": "b447cc5ec444755d7e9c21590d6824ae919010528ee67073523be75439ececb8",
+    "manifest_sha256": "c50ebe583522c26148b10e23400caab7422bb601d86525f8b9b5c3c51c85f7fe",
     "package_tree_sha256": "b9ab93e9954aa77eeaa12a4470fe5da6772c16b35be22944aee7350b84b8ac7f",
     "installed_tree_sha256": "b9ab93e9954aa77eeaa12a4470fe5da6772c16b35be22944aee7350b84b8ac7f",
     "agent_response_sha256": "fd3d572d9bfc5726a43963efa6329ddd8fa46494065046030e45e51a9fa234c9"
