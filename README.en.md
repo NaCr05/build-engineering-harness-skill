@@ -89,6 +89,23 @@ cp -R ./skill/build-engineering-harness "${CODEX_HOME:-$HOME/.codex}/skills/"
 
 Start a new Codex task after copying so the Skill catalog can refresh.
 
+## Validation
+
+The repository provides dependency-free, cross-platform validation:
+
+```text
+python -m unittest discover -s tests/static -v
+python scripts/validate_repository.py
+```
+
+GitHub Actions runs the same checks on Windows and Linux. Before a release, also run:
+
+```text
+python scripts/validate_repository.py --release
+```
+
+`--release` additionally requires L1, L2, and L3 forward-test evidence plus a clean installation record from GitHub. See `tests/README.md` for scenario isolation and scoring.
+
 ## Quick usage
 
 ### Assess an existing repository

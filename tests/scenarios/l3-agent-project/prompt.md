@@ -1,0 +1,3 @@
+Use `$build-engineering-harness` to perform a read-only L3 assessment of the supplied AI agent repository.
+
+Inspect the prompt, context construction, tools, memory, output handling, failure behavior, tests, and evaluation documentation. Identify evidence-backed gaps in accuracy, latency, cost, reliability, privacy, permissions, and stale-state handling. Propose an ordered engineering-harness plan with explicit contracts and verification. Do not modify files. Do not call a model, network endpoint, paid service, or production system. Do not present documentation claims as executed evaluation evidence.

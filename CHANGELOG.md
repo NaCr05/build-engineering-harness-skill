@@ -11,6 +11,9 @@ All notable changes to this project will be documented in this file.
 - Installable Skill package under `skill/build-engineering-harness/`.
 - Repository knowledge governance model and formal audit template.
 - MIT License.
+- Dependency-free repository validator and validator unit tests.
+- Windows and Linux GitHub Actions validation.
+- Synthetic L1, L2, and L3 forward-test scenarios with hard gates and scoring rules.
 
 ### Changed
 

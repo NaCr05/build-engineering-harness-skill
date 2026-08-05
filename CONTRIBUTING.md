@@ -33,11 +33,16 @@ Do not create new reference files when an existing source of truth can be extend
 
 ## Validation
 
-If the Codex `skill-creator` validation script is available, run:
+Run the repository-native checks:
 
 ```text
-python -X utf8 <path-to-skill-creator>/scripts/quick_validate.py skill/build-engineering-harness
+python -m unittest discover -s tests/static -v
+python scripts/validate_repository.py
 ```
+
+Before tagging a release, run `python scripts/validate_repository.py --release`.
+
+If the Codex `skill-creator` validator is available, run it as an additional compatibility check against `skill/build-engineering-harness`.
 
 Also confirm:
 
@@ -47,7 +52,7 @@ Also confirm:
 - no secret, personal path, private project name, or confidential content is present;
 - the change does not weaken approval, safety, or product-code boundaries.
 
-Real-world forward tests should use fresh tasks and raw repositories. Do not disclose the expected answer to the evaluating agent.
+Forward tests must use fresh tasks and disposable synthetic or public repositories. Pass raw fixtures rather than intended answers, and do not disclose evaluator expectations to the agent. Follow `tests/README.md`.
 
 ## Pull requests
 

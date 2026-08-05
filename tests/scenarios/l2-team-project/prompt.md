@@ -1,0 +1,3 @@
+Use `$build-engineering-harness` to perform a formal, read-only repository knowledge and engineering-harness audit of the supplied team project. Target L2 maturity.
+
+The project is maintained by several developers and is changed weekly. Inspect its entry documentation, scoped instructions, contracts, decision history, current-state claims, tests, and development workflow. Identify authority conflicts and drift risks, then propose the smallest L2 governance changes with exact files, update triggers, ownership, and verification. Separate observed facts, inferences, risks, and recommendations. Do not modify files and do not present an unrun check as passing.

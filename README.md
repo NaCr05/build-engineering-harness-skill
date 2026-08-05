@@ -105,6 +105,23 @@ cp -R ./skill/build-engineering-harness "${CODEX_HOME:-$HOME/.codex}/skills/"
 
 复制后新建一个 Codex 任务，让 Skill 列表重新加载。
 
+## 验证
+
+仓库提供不依赖第三方包的跨平台验证入口：
+
+```text
+python -m unittest discover -s tests/static -v
+python scripts/validate_repository.py
+```
+
+GitHub Actions 会在 Windows 和 Linux 上运行相同检查。发布前还必须运行：
+
+```text
+python scripts/validate_repository.py --release
+```
+
+`--release` 额外要求 L1、L2、L3 前向测试证据和从 GitHub 全新安装的验证记录。场景设计、隔离方法和评分规则见 `tests/README.md`。
+
 ## 快速使用
 
 ### 现有项目体检
