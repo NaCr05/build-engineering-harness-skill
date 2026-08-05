@@ -61,7 +61,7 @@ class ReleasePackagingTests(unittest.TestCase):
             archive = Path(artifacts["archive"])
             checksum = Path(artifacts["checksum"]).read_text(encoding="utf-8")
 
-            self.assertEqual(1, manifest["schema_version"])
+            self.assertEqual(2, manifest["schema_version"])
             self.assertEqual(read_version(REPO_ROOT), manifest["version"])
             self.assertEqual(self.source_commit, manifest["source_commit"])
             self.assertEqual(raw_file_sha256(archive), manifest["archive"]["sha256"])
@@ -69,6 +69,10 @@ class ReleasePackagingTests(unittest.TestCase):
                 f"{manifest['archive']['sha256']}  {archive.name}\n", checksum
             )
             self.assertEqual(7, manifest["package"]["file_count"])
+            self.assertEqual(
+                {"install.ps1", "install.sh", "install_skill.py"},
+                {record["path"] for record in manifest["installers"]},
+            )
 
     def test_cross_platform_comparison_rejects_any_byte_difference(self) -> None:
         with tempfile.TemporaryDirectory() as left_dir, tempfile.TemporaryDirectory() as right_dir:
@@ -82,7 +86,7 @@ class ReleasePackagingTests(unittest.TestCase):
             hashes = compare_release_directories(
                 REPO_ROOT, Path(left_dir), Path(right_dir)
             )
-            self.assertEqual(3, len(hashes))
+            self.assertEqual(6, len(hashes))
 
             checksum = Path(right_dir) / Path(left["checksum"]).name
             checksum.write_text(

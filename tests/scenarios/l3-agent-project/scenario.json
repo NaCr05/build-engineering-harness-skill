@@ -36,6 +36,6 @@
     "Claiming an evaluation passed based on docs/evaluation.md.",
     "Recommending memory retention without privacy and deletion controls."
   ],
-  "response": "response.md",
-  "result": "result.json"
+  "runs_dir": "runs",
+  "release_run": "2026-08-05-ca5f1a8-l3-01"
 }

@@ -1,41 +1,46 @@
 {
-  "schema_version": 1,
-  "run_id": "2026-08-05-8df297f-trusted-zip-02",
-  "source_commit": "8df297f13ca695eaad560ce9635010e89e8e4c69",
+  "schema_version": 2,
+  "run_id": "2026-08-05-0d68d71-safe-installer-04",
+  "source_commit": "0d68d71edcc91ba30e4bfb36a9382675de3e7a1f",
   "tested_at": "2026-08-05",
   "passed": true,
   "environment": {
-    "host_os": "Windows",
-    "installation_source": "clean public GitHub clone",
-    "installation_method": "deterministic versioned ZIP extraction",
+    "host_os": "Windows with WSL",
+    "installation_source": "clean clone of the public GitHub feature branch at the recorded commit",
+    "installation_method": "manifest-verified safe installer with dry-run, upgrade backup, and rollback unit test",
     "runner_surface": "Codex desktop local verification"
   },
   "artifacts": {
     "archive_sha256": "c9cf2fbfbfe978930fd2020969c7b2fe69d02d1057e6f73eb0f0b6e9dfe8575f",
-    "checksum_sha256": "f0781b3e7997134dbfe90f095e11311d109a4da3508a6ef9b59031c9fc3e0710",
-    "manifest_sha256": "c50ebe583522c26148b10e23400caab7422bb601d86525f8b9b5c3c51c85f7fe",
+    "checksum_sha256": "92590ea6909735f0044dae5f0d38c2428d8a182b90cbf457a24ca9d2e0b5638c",
+    "manifest_sha256": "689f74fa89c9239e2b19234a54157c04552eb8202464ee16cf7afe1ee09ee26c",
     "package_tree_sha256": "b9ab93e9954aa77eeaa12a4470fe5da6772c16b35be22944aee7350b84b8ac7f",
     "installed_tree_sha256": "b9ab93e9954aa77eeaa12a4470fe5da6772c16b35be22944aee7350b84b8ac7f",
-    "agent_response_sha256": "fd3d572d9bfc5726a43963efa6329ddd8fa46494065046030e45e51a9fa234c9"
+    "agent_response_sha256": "fd3d572d9bfc5726a43963efa6329ddd8fa46494065046030e45e51a9fa234c9",
+    "installer_python_sha256": "b7a4d1815778370bf903c5ca9b44ed632e1db27aba4dabf34c45f4ba0cd6d024",
+    "installer_powershell_sha256": "268291b91da7b02565651e81602dffad6818ed2b60b291bc5fe4e0160b524529",
+    "installer_shell_sha256": "e73eea5b501ea5c174229c7f38cd867bf55015577943807a2b994e8c95304efc"
   },
   "checks": [
-    "Cloned the public GitHub repository at the recorded commit into a new disposable directory on the D drive.",
-    "Built the deterministic versioned ZIP, checksum, and manifest from that clean clone.",
-    "Verified the ZIP against its SHA-256 checksum before extraction.",
-    "Extracted the ZIP into an isolated temporary Codex skills directory with exactly seven packaged Skill files.",
-    "Matched the source package tree, manifest package tree, and installed package tree by canonical SHA-256.",
-    "Ran all eighteen repository-validator and packaging unit tests successfully from the clean clone, with the Windows symlink-creation case skipped because the host lacks that operating-system privilege.",
+    "Cloned the public GitHub feature branch at the recorded commit into a new disposable directory on the D drive.",
+    "Built the deterministic six-asset release set with source-commit enforcement from that clean clone.",
+    "Ran the packaged PowerShell installer in dry-run mode and confirmed it created no CODEX_HOME target.",
+    "Installed into an isolated Codex home, then upgraded the same target and retained the previous verified installation as a unique backup.",
+    "Matched the source package tree, installed tree, and upgrade-backup tree by canonical SHA-256.",
+    "Ran the packaged POSIX shell installer in WSL dry-run mode against the same verified release assets.",
+    "Verified path-traversal rejection, installer-tamper rejection, and automatic restoration after an injected post-backup failure through repository-native tests.",
+    "Ran all twenty-seven repository-validator, packaging, and installer tests successfully from the clean clone; the Windows symbolic-link creation case was skipped because the host lacks that operating-system privilege.",
     "Ran dependency-free repository validation with zero errors and zero warnings from the clean clone.",
-    "Ran the official Skill quick validator in Python UTF-8 mode against the installed package successfully.",
-    "The pull-request workflow independently built and uploaded the package on Windows and Linux, then compared all three assets byte for byte successfully.",
-    "The installed Skill tree is identical to the v0.2.0-beta tree, so the previously recorded fresh-agent usability response remains content-addressed by the unchanged package-tree and response hashes."
+    "Ran the official Skill quick validator against the isolated installed package successfully.",
+    "The installed Skill tree is byte-identical to the previously probed v0.2.0-beta tree, so the content-addressed fresh-agent usability response remains applicable."
   ],
   "agent_response": "agent-response.md",
   "limitations": [
-    "This run verified clean cloning, source-commit enforcement, deterministic packaging, checksum verification, filesystem installation, structural validation, and cross-platform artifact identity.",
-    "No new fresh-agent probe was executed because the installable Skill tree is byte-identical to the previously probed v0.2.0-beta tree; the prior response is reused explicitly rather than presented as a new run.",
+    "The test used locally built assets from a clean public GitHub branch clone because the v0.3.1-beta tag and draft prerelease did not yet exist.",
+    "The POSIX wrapper was exercised in dry-run mode; actual replacement, upgrade, backup, and rollback paths were exercised through the shared Python installer on Windows.",
+    "No new fresh-agent probe was executed because the installable Skill tree is byte-identical to the previously probed tree; the prior response is reused explicitly rather than presented as a new run.",
     "Automatic refresh or discovery in the Codex desktop Skill catalog was not exercised.",
     "The representative repository fixture is synthetic and does not replace broader observation across unrelated production repositories.",
-    "The runner surface was recorded, but the fresh-agent model identifier was not exposed by the orchestration interface."
+    "GitHub-hosted Windows/Linux comparison, release download, attestation verification, and draft-prerelease review remain tag-time checks."
   ]
 }

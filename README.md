@@ -4,7 +4,7 @@
 
 一个面向人类与 AI Agent 协作的软件工程 Skill：审计、建立和改进项目的目标、仓库知识、规则、验证与反馈闭环，并在项目完成后沉淀复盘和新人上手资料。
 
-> 当前候选版本：`v0.3.0-beta`。本轮为版本化安装包增加跨平台逐字节比较、构建来源证明和自动 Draft Prerelease；最新已公开版本仍是 `v0.2.0-beta`。
+> 当前候选版本：`v0.3.1-beta`。本轮增加评测 Schema v2、不可覆盖的追加式运行历史，以及支持校验、升级和失败回滚的安全安装器；最新已公开版本仍是 `v0.2.0-beta`。
 
 ## 它解决什么问题
 
@@ -82,51 +82,43 @@ Skill 不会把普通的评估请求理解成写入许可，也不会因为偏�
 
 ## 安装
 
-推荐从已公开的 GitHub Release 安装固定版本。`v0.3.0-beta` 会先由 CI 创建为 Draft Prerelease，完成人工核对并公开前，以下命令继续安装 [`v0.2.0-beta`](https://github.com/NaCr05/build-engineering-harness-skill/releases/tag/v0.2.0-beta)。
+推荐从固定版本的 GitHub Release 安装。`v0.3.1-beta` 会先由 CI 创建为 Draft Prerelease；在人工核对并公开前，最新可公开安装的版本仍是 [`v0.2.0-beta`](https://github.com/NaCr05/build-engineering-harness-skill/releases/tag/v0.2.0-beta)。下面展示 `v0.3.1-beta` 安全安装器的维护者验收流程；公开后普通用户也使用相同流程。
 
 PowerShell：
 
 ```powershell
-$version = "v0.2.0-beta"
+$version = "v0.3.1-beta"
 $assetBase = "build-engineering-harness-$version"
-gh release download $version --repo NaCr05/build-engineering-harness-skill --pattern "$assetBase*"
+$assets = Join-Path $env:TEMP "$assetBase-assets"
+New-Item -ItemType Directory -Force -Path $assets | Out-Null
+gh release download $version --repo NaCr05/build-engineering-harness-skill --dir $assets --pattern "$assetBase*" --pattern "install*"
 
-$expected = ((Get-Content "$assetBase.zip.sha256").Trim() -split '\s+')[0].ToLowerInvariant()
-$actual = (Get-FileHash "$assetBase.zip" -Algorithm SHA256).Hash.ToLowerInvariant()
-if ($actual -ne $expected) { throw "Release archive checksum mismatch." }
-
-$skillsDir = Join-Path $env:USERPROFILE ".codex\skills"
-$target = Join-Path $skillsDir "build-engineering-harness"
-if (Test-Path $target) { throw "Target already exists: $target. Back it up or remove it before upgrading." }
-New-Item -ItemType Directory -Force -Path $skillsDir | Out-Null
-Expand-Archive -LiteralPath "$assetBase.zip" -DestinationPath $skillsDir
+# 先校验归档、manifest、每个文件和安装器本身，不写入 Skill 目录。
+& "$assets\install.ps1" -Version $version -AssetDir $assets -DryRun
+# 确认无误后安装；已有版本会先备份，失败时自动回滚。
+& "$assets\install.ps1" -Version $version -AssetDir $assets
 ```
 
 macOS 或 Linux：
 
 ```bash
-version="v0.2.0-beta"
+version="v0.3.1-beta"
 asset_base="build-engineering-harness-$version"
-gh release download "$version" --repo NaCr05/build-engineering-harness-skill --pattern "$asset_base*"
+assets="$(mktemp -d)"
+gh release download "$version" --repo NaCr05/build-engineering-harness-skill --dir "$assets" --pattern "$asset_base*" --pattern "install*"
 
-expected="$(awk '{print $1}' "$asset_base.zip.sha256")"
-actual="$(python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$asset_base.zip")"
-[ "$actual" = "$expected" ] || { echo "Release archive checksum mismatch." >&2; exit 1; }
-
-skills_dir="${CODEX_HOME:-$HOME/.codex}/skills"
-target="$skills_dir/build-engineering-harness"
-[ ! -e "$target" ] || { echo "Target already exists: $target. Back it up or remove it before upgrading." >&2; exit 1; }
-mkdir -p "$skills_dir"
-unzip -q "$asset_base.zip" -d "$skills_dir"
+# 先做只读校验，再执行安装或升级。
+sh "$assets/install.sh" --version "$version" --asset-dir "$assets" --dry-run
+sh "$assets/install.sh" --version "$version" --asset-dir "$assets"
 ```
 
 如需从源码安装，请克隆对应标签而不是移动中的 `main`：
 
 ```bash
-git clone --branch v0.2.0-beta --depth 1 https://github.com/NaCr05/build-engineering-harness-skill.git
+git clone --branch v0.3.1-beta --depth 1 https://github.com/NaCr05/build-engineering-harness-skill.git
 ```
 
-安装或升级后新建一个 Codex 任务，让 Skill 列表重新加载。
+安装器遵循 `CODEX_HOME`；未设置时使用用户目录下的 `.codex`。升级时旧目录会保留为同一 `skills` 目录下的唯一备份，失败会自动恢复。安装或升级后新建一个 Codex 任务，让 Skill 列表重新加载。
 
 ## 验证
 
@@ -144,9 +136,9 @@ GitHub Actions 会在 Windows 和 Linux 上运行相同检查。发布前还必�
 python scripts/validate_repository.py --release
 ```
 
-`--release` 额外要求 L1、L2、L3 前向测试证据和从 GitHub 全新安装的验证记录。场景设计、隔离方法和评分规则见 `tests/README.md`。
+`--release` 额外要求 L1、L2、L3 前向测试证据和隔离安装验证记录。Schema v2 会重新计算 Agent 输入包与评审输入包的独立哈希，并验证模型、运行器、时间、用量、评审者、规则版本和逐项评分理由；历史运行只能追加，不能覆盖。场景设计、隔离方法和评分规则见 `tests/README.md`。
 
-CI 会分别上传 Windows 与 Linux 构建结果，再使用 `scripts/compare_release_artifacts.py` 逐字节比较 ZIP、校验文件和 manifest。版本标签只有在跨平台比较和发布证据都通过后，才会为资产生成 GitHub Artifact Attestation 并创建 Draft Prerelease。正式打包还要求 `VERSION` 与 Skill 包内容已经提交，并与给定来源提交一致。
+CI 会分别上传 Windows 与 Linux 构建结果，再使用 `scripts/compare_release_artifacts.py` 逐字节比较 ZIP、校验文件、manifest 和三种安装器。版本标签只有在跨平台比较和发布证据都通过后，才会为全部六项资产生成 GitHub Artifact Attestation 并创建 Draft Prerelease。正式打包还要求 `VERSION`、Skill 包和安装器已经提交，并与给定来源提交一致。
 
 ## 快速使用
 
@@ -205,16 +197,16 @@ skill/build-engineering-harness/
 
 `SKILL.md` 是 Codex 实际加载的入口。`SKILL.zh-CN.md` 是供中文读者理解和核对的同步版本。详细方法按需放在 `references/`，可复制的输出模板放在 `assets/`。
 
-## `v0.3.0-beta` 候选版验证证据
+## `v0.3.1-beta` 候选版验证证据
 
 - L1、L2、L3 三组隔离前向测试均通过全部安全门禁，质量评分均为 10/10；原始回答与评分记录位于 [`tests/scenarios/`](tests/scenarios/)。
-- 前向测试证据记录运行 ID、源提交、隔离方式及 Skill、Prompt、Fixture、预期、响应的可复算 SHA-256；证据见 [`tests/scenarios/`](tests/scenarios/)。
-- 已从公开 GitHub 仓库构建并安装确定性版本化 ZIP，核对归档、校验和、manifest、源目录、安装目录和全新 Agent 响应；证据见 [`tests/installation/result.json`](tests/installation/result.json)。
-- `v0.3.0-beta` 不改变可安装 Skill 的行为，继续使用同一 Skill 目录树和已有 L1、L2、L3 前向测试证据。
+- 前向测试证据使用 Schema v2，记录运行与评审来源、显式未知原因、输入包隔离哈希和逐项评分理由；每次运行保存在独立 `runs/<run-id>/` 目录，CI 阻止修改或删除既有历史。
+- 安全安装器在解压前验证 manifest、归档校验和、安装器自身、每个包文件与整棵 Skill 树；升级会保留旧版本备份，安装失败会自动回滚。隔离验证证据见 [`tests/installation/result.json`](tests/installation/result.json)。
+- `v0.3.1-beta` 不改变可安装 Skill 的行为，继续使用同一 Skill 目录树和已有 L1、L2、L3 前向测试响应。
 - GitHub Actions 已配置为上传 Windows 与 Linux 构建、比较全部发布资产、验证发布证据、生成 Artifact Attestation，并自动创建 Draft Prerelease。
 - 所有第三方 Actions 均固定到完整提交 SHA；正式打包拒绝来源提交不匹配、未提交的包输入、符号链接、目录联接和特殊文件。
 
-这些是可复现的代表性合成场景，不等同于对所有生产仓库的覆盖。`v0.3.0-beta` 在 Draft Prerelease 经过人工核对并公开前，不是可安装的公开版本或稳定版承诺。
+这些是可复现的代表性合成场景，不等同于对所有生产仓库的覆盖。`v0.3.1-beta` 在 Draft Prerelease 经过人工核对并公开前，不是可安装的公开版本或稳定版承诺。
 
 ## 参与贡献
 

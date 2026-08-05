@@ -15,7 +15,8 @@ body:
     attributes:
       label: Affected version
       options:
-        - v0.3.0-beta draft candidate
+        - v0.3.1-beta draft candidate
+        - v0.3.0-beta superseded draft candidate
         - v0.2.0-beta
         - v0.1.1-beta
         - v0.1.0-beta

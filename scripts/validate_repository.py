@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import re
 import sys
@@ -14,7 +15,12 @@ from typing import Iterable
 from urllib.parse import unquote
 
 from build_release_package import build_release_artifacts
-from evidence_hashes import canonical_file_sha256, canonical_tree_sha256, iter_tree_files
+from evidence_hashes import (
+    canonical_file_sha256,
+    canonical_tree_sha256,
+    iter_tree_files,
+    named_digest_sha256,
+)
 
 
 SKILL_NAME = "build-engineering-harness"
@@ -36,10 +42,15 @@ REQUIRED_ROOT_PATHS = {
     Path("SECURITY.md"),
     Path("VERSION"),
     Path("scripts/build_release_package.py"),
+    Path("scripts/check_append_only_runs.py"),
     Path("scripts/compare_release_artifacts.py"),
     Path("scripts/evidence_hashes.py"),
+    Path("scripts/install.ps1"),
+    Path("scripts/install.sh"),
+    Path("scripts/install_skill.py"),
     Path("scripts/validate_repository.py"),
     Path("tests/static/test_packaging.py"),
+    Path("tests/static/test_installer.py"),
     Path("tests/static/test_validation.py"),
 }
 
@@ -247,6 +258,9 @@ def check_trusted_release_workflow(root: Path, issues: list[Issue]) -> None:
         "actions/download-artifact@": "CI must download release artifacts for comparison and release.",
         "actions/attest@": "Tagged release archives must receive a GitHub artifact attestation.",
         "compare_release_artifacts.py": "CI must compare Windows and Linux release artifacts.",
+        "check_append_only_runs.py": "Pull requests must reject changes to historical run evidence.",
+        "install.ps1": "CI must smoke-test the PowerShell safe installer.",
+        "install.sh": "CI must smoke-test the POSIX safe installer.",
         "attestations: write": "The release job needs permission to publish attestations.",
         "id-token: write": "The release job needs OIDC permission for attestations.",
         "--draft": "Tag automation must create a draft release.",
@@ -402,6 +416,12 @@ def check_markdown_links(root: Path, issues: list[Issue]) -> None:
             if re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", target):
                 continue
             resolved = (path.parent / target).resolve()
+            if (
+                not resolved.exists()
+                and "runs" in rel.parts
+                and len(path.parents) >= 3
+            ):
+                resolved = (path.parents[2] / target).resolve()
             if not resolved.exists():
                 add_issue(
                     issues,
@@ -521,8 +541,8 @@ def check_scenarios(root: Path, issues: list[Issue]) -> None:
         "quality_dimensions",
         "expected_findings",
         "forbidden_behavior",
-        "response",
-        "result",
+        "runs_dir",
+        "release_run",
     }
     for scenario_id, level in SCENARIOS.items():
         scenario_dir = scenarios_root / scenario_id
@@ -598,6 +618,26 @@ def check_scenarios(root: Path, issues: list[Issue]) -> None:
         fixture_dir = scenario_dir / fixture_value if isinstance(fixture_value, str) else None
         if fixture_dir and fixture_dir.is_dir() and not any(fixture_dir.rglob("*")):
             add_issue(issues, "error", "SCENARIO_EMPTY_FIXTURE", rel, "Fixture is empty.")
+        runs_dir = data.get("runs_dir")
+        release_run = data.get("release_run")
+        if runs_dir != "runs" or not (scenario_dir / "runs").is_dir():
+            add_issue(
+                issues,
+                "error",
+                "SCENARIO_RUNS_DIR",
+                rel,
+                "Scenario run evidence must live in the runs directory.",
+            )
+        if not isinstance(release_run, str) or not re.fullmatch(
+            r"[0-9A-Za-z][0-9A-Za-z._-]+", release_run
+        ):
+            add_issue(
+                issues,
+                "error",
+                "SCENARIO_RELEASE_RUN",
+                rel,
+                "Scenario manifest needs a stable release_run identifier.",
+            )
 
 
 def check_hash_value(
@@ -631,17 +671,19 @@ def check_scenario_provenance(
     manifest: dict,
     result: dict,
     result_path: Path,
+    response_path: Path,
     issues: list[Issue],
 ) -> None:
-    if result.get("schema_version") != 1:
+    if result.get("schema_version") != 2:
         add_issue(
             issues,
             "error",
             "RELEASE_PROVENANCE_SCHEMA",
             result_path,
-            "Scenario evidence must use provenance schema version 1.",
+            "Scenario evidence must use provenance schema version 2.",
         )
-    if not re.fullmatch(r"[0-9A-Za-z][0-9A-Za-z._-]+", str(result.get("run_id", ""))):
+    run_id = str(result.get("run_id", ""))
+    if not re.fullmatch(r"[0-9A-Za-z][0-9A-Za-z._-]+", run_id):
         add_issue(
             issues,
             "error",
@@ -649,16 +691,38 @@ def check_scenario_provenance(
             result_path,
             "Scenario evidence needs a stable run_id.",
         )
+    if result_path.parent.name != run_id:
+        add_issue(
+            issues,
+            "error",
+            "RELEASE_RUN_PATH",
+            result_path,
+            "The run directory name must equal result.run_id.",
+        )
+    try:
+        dt.date.fromisoformat(str(result.get("run_date", "")))
+        run_date_valid = True
+    except ValueError:
+        run_date_valid = False
+    if not run_date_valid:
+        add_issue(
+            issues,
+            "error",
+            "RELEASE_RUN_DATE",
+            result_path,
+            "Scenario evidence needs an ISO calendar run_date.",
+        )
 
     provenance = result.get("provenance")
     required_provenance = {
         "source_commit",
-        "runner_surface",
-        "model_identifier",
+        "runner",
+        "model",
+        "timing",
+        "usage",
         "isolation",
-        "expected_answer_withheld",
     }
-    if not isinstance(provenance, dict) or not required_provenance.issubset(provenance):
+    if not isinstance(provenance, dict) or set(provenance) != required_provenance:
         add_issue(
             issues,
             "error",
@@ -666,33 +730,143 @@ def check_scenario_provenance(
             result_path,
             "Scenario evidence is missing required run provenance.",
         )
-    else:
-        if not COMMIT_PATTERN.fullmatch(str(provenance.get("source_commit", ""))):
-            add_issue(
-                issues,
-                "error",
-                "RELEASE_PROVENANCE_COMMIT",
-                result_path,
-                "Scenario provenance needs a full source commit SHA.",
-            )
-        if provenance.get("expected_answer_withheld") is not True:
-            add_issue(
-                issues,
-                "error",
-                "RELEASE_PROVENANCE_ISOLATION",
-                result_path,
-                "Scenario provenance must confirm that expected answers were withheld.",
-            )
-        if not str(provenance.get("runner_surface", "")).strip() or not str(
-            provenance.get("isolation", "")
-        ).strip():
+        return
+    if not COMMIT_PATTERN.fullmatch(str(provenance.get("source_commit", ""))):
+        add_issue(
+            issues,
+            "error",
+            "RELEASE_PROVENANCE_COMMIT",
+            result_path,
+            "Scenario provenance needs a full source commit SHA.",
+        )
+
+    for field, value_field, label in (
+        ("runner", "version", "runner version"),
+        ("model", "identifier", "model identifier"),
+    ):
+        record = provenance.get(field)
+        reason_field = f"{value_field}_unknown_reason"
+        expected_fields = (
+            {"surface", value_field, reason_field}
+            if field == "runner"
+            else {value_field, reason_field}
+        )
+        if not isinstance(record, dict) or set(record) != expected_fields:
             add_issue(
                 issues,
                 "error",
                 "RELEASE_PROVENANCE_DETAIL",
                 result_path,
-                "Runner surface and isolation details must be recorded.",
+                f"Scenario evidence has an incomplete {field} record.",
             )
+            continue
+        if field == "runner" and not str(record.get("surface", "")).strip():
+            add_issue(
+                issues,
+                "error",
+                "RELEASE_PROVENANCE_DETAIL",
+                result_path,
+                "Runner surface must be recorded.",
+            )
+        value = record.get(value_field)
+        reason = record.get(reason_field)
+        known = isinstance(value, str) and bool(value.strip())
+        unknown = value is None and isinstance(reason, str) and bool(reason.strip())
+        if not (known ^ unknown) or (known and reason is not None):
+            add_issue(
+                issues,
+                "error",
+                "RELEASE_PROVENANCE_UNKNOWN",
+                result_path,
+                f"Record an exact {label}, or null plus an explicit unknown reason.",
+            )
+
+    timing = provenance.get("timing")
+    if not isinstance(timing, dict) or set(timing) != {
+        "started_at",
+        "finished_at",
+        "duration_ms",
+        "unknown_reason",
+    }:
+        add_issue(
+            issues,
+            "error",
+            "RELEASE_TIMING",
+            result_path,
+            "Scenario evidence has an incomplete timing record.",
+        )
+    else:
+        timing_values = [timing.get("started_at"), timing.get("finished_at"), timing.get("duration_ms")]
+        if all(value is None for value in timing_values):
+            if not str(timing.get("unknown_reason", "")).strip():
+                add_issue(issues, "error", "RELEASE_TIMING", result_path, "Unknown timing needs an explicit reason.")
+        else:
+            valid_timing = isinstance(timing.get("duration_ms"), int) and timing["duration_ms"] >= 0
+            parsed_times: dict[str, dt.datetime] = {}
+            for field in ("started_at", "finished_at"):
+                try:
+                    parsed = dt.datetime.fromisoformat(str(timing.get(field)).replace("Z", "+00:00"))
+                    valid_timing = valid_timing and parsed.tzinfo is not None
+                    parsed_times[field] = parsed
+                except ValueError:
+                    valid_timing = False
+            if len(parsed_times) == 2 and isinstance(timing.get("duration_ms"), int):
+                elapsed_ms = int(
+                    (parsed_times["finished_at"] - parsed_times["started_at"]).total_seconds()
+                    * 1000
+                )
+                valid_timing = valid_timing and elapsed_ms >= 0 and abs(
+                    elapsed_ms - timing["duration_ms"]
+                ) <= 1000
+            if not valid_timing or timing.get("unknown_reason") is not None:
+                add_issue(issues, "error", "RELEASE_TIMING", result_path, "Timing must use timezone-aware timestamps and a non-negative duration, or nulls plus a reason.")
+
+    usage = provenance.get("usage")
+    if not isinstance(usage, dict) or set(usage) != {
+        "input_tokens",
+        "output_tokens",
+        "cost_usd",
+        "unknown_reason",
+    }:
+        add_issue(issues, "error", "RELEASE_USAGE", result_path, "Scenario evidence has an incomplete usage record.")
+    else:
+        values = [usage.get("input_tokens"), usage.get("output_tokens"), usage.get("cost_usd")]
+        numbers_valid = all(
+            value is None or (isinstance(value, (int, float)) and not isinstance(value, bool) and value >= 0)
+            for value in values
+        )
+        needs_reason = any(value is None for value in values)
+        reason_present = isinstance(usage.get("unknown_reason"), str) and bool(usage["unknown_reason"].strip())
+        if not numbers_valid or needs_reason != reason_present:
+            add_issue(issues, "error", "RELEASE_USAGE", result_path, "Record non-negative usage values; every unavailable value needs an explicit reason.")
+
+    isolation = provenance.get("isolation")
+    if not isinstance(isolation, dict) or set(isolation) != {
+        "method",
+        "expected_answer_withheld",
+        "agent_input_bundle_sha256",
+        "evaluator_bundle_sha256",
+    }:
+        add_issue(issues, "error", "RELEASE_PROVENANCE_ISOLATION", result_path, "Scenario evidence has an incomplete isolation record.")
+        return
+    if isolation.get("expected_answer_withheld") is not True or not str(isolation.get("method", "")).strip():
+        add_issue(issues, "error", "RELEASE_PROVENANCE_ISOLATION", result_path, "Isolation method and withheld-answer confirmation are required.")
+
+    evaluation = result.get("evaluation")
+    if not isinstance(evaluation, dict) or set(evaluation) != {
+        "evaluator",
+        "rubric_version",
+        "scoring_rationale",
+    }:
+        add_issue(issues, "error", "RELEASE_EVALUATION", result_path, "Scenario evidence has an incomplete evaluation record.")
+    else:
+        rationale = evaluation.get("scoring_rationale")
+        if not str(evaluation.get("evaluator", "")).strip() or not str(evaluation.get("rubric_version", "")).strip():
+            add_issue(issues, "error", "RELEASE_EVALUATION", result_path, "Evaluator identity and rubric version are required.")
+        if not isinstance(rationale, dict) or set(rationale) != QUALITY_DIMENSIONS or not all(
+            isinstance(value, str) and value.strip() for value in rationale.values()
+        ):
+            add_issue(issues, "error", "RELEASE_SCORING_RATIONALE", result_path, "Every quality dimension needs a non-empty scoring rationale.")
 
     scenario_dir = root / "tests/scenarios" / scenario_id
     artifacts = result.get("artifacts")
@@ -714,7 +888,6 @@ def check_scenario_provenance(
         return
 
     expected_path = scenario_dir / str(manifest.get("expected", "expected.md"))
-    response_path = scenario_dir / str(manifest.get("response", "response.md"))
     prompt_path = scenario_dir / str(manifest.get("prompt", "prompt.md"))
     fixture_path = scenario_dir / str(manifest.get("fixture", "repository-fixture"))
     if not (
@@ -735,17 +908,48 @@ def check_scenario_provenance(
     for label, actual in hash_targets.items():
         check_hash_value(issues, result_path, label, artifacts.get(label), actual)
 
+    agent_bundle = named_digest_sha256(
+        "build-engineering-harness-agent-input-v1",
+        {
+            "skill_tree_sha256": hash_targets["skill_tree_sha256"],
+            "prompt_sha256": hash_targets["prompt_sha256"],
+            "fixture_tree_sha256": hash_targets["fixture_tree_sha256"],
+        },
+    )
+    evaluator_bundle = named_digest_sha256(
+        "build-engineering-harness-evaluator-input-v1",
+        {
+            "agent_input_bundle_sha256": agent_bundle,
+            "expected_sha256": hash_targets["expected_sha256"],
+            "response_sha256": hash_targets["response_sha256"],
+        },
+    )
+    check_hash_value(
+        issues,
+        result_path,
+        "agent_input_bundle_sha256",
+        isolation.get("agent_input_bundle_sha256"),
+        agent_bundle,
+    )
+    check_hash_value(
+        issues,
+        result_path,
+        "evaluator_bundle_sha256",
+        isolation.get("evaluator_bundle_sha256"),
+        evaluator_bundle,
+    )
+
 
 def check_installation_provenance(
     root: Path, result: dict, result_path: Path, issues: list[Issue]
 ) -> None:
-    if result.get("schema_version") != 1:
+    if result.get("schema_version") != 2:
         add_issue(
             issues,
             "error",
             "RELEASE_INSTALLATION_SCHEMA",
             result_path,
-            "Installation evidence must use provenance schema version 1.",
+            "Installation evidence must use provenance schema version 2.",
         )
     if not re.fullmatch(r"[0-9A-Za-z][0-9A-Za-z._-]+", str(result.get("run_id", ""))):
         add_issue(
@@ -767,6 +971,9 @@ def check_installation_provenance(
         "package_tree_sha256",
         "installed_tree_sha256",
         "agent_response_sha256",
+        "installer_python_sha256",
+        "installer_powershell_sha256",
+        "installer_shell_sha256",
     }
     if not isinstance(artifacts, dict) or set(artifacts) != required_artifacts:
         add_issue(
@@ -792,6 +999,9 @@ def check_installation_provenance(
             "agent_response_sha256": canonical_file_sha256(
                 root / "tests/installation/agent-response.md"
             ),
+            "installer_python_sha256": str(built["installer_hashes"]["install_skill.py"]),
+            "installer_powershell_sha256": str(built["installer_hashes"]["install.ps1"]),
+            "installer_shell_sha256": str(built["installer_hashes"]["install.sh"]),
         }
     for label, actual in hash_targets.items():
         check_hash_value(issues, result_path, label, artifacts.get(label), actual)
@@ -812,64 +1022,119 @@ def check_release_evidence(root: Path, issues: list[Issue]) -> None:
         )
         if manifest is None:
             continue
-        response_path = scenario_dir / str(manifest.get("response", "response.md"))
-        result_path = scenario_dir / str(manifest.get("result", "result.json"))
-        if not response_path.is_file() or not read_text(response_path).strip():
-            add_issue(
-                issues,
-                "error",
-                "RELEASE_SCENARIO_RESPONSE",
-                response_path.relative_to(root),
-                "Raw scenario response is required for release.",
-            )
-        if not result_path.is_file():
+        runs_dir = scenario_dir / str(manifest.get("runs_dir", "runs"))
+        if not runs_dir.is_dir():
             add_issue(
                 issues,
                 "error",
                 "RELEASE_SCENARIO_RESULT",
-                result_path.relative_to(root),
-                "Scored scenario result is required for release.",
+                runs_dir.relative_to(root),
+                "Append-only scenario run history is required for release.",
             )
             continue
-        result = load_json(
-            result_path,
-            issues,
-            result_path.relative_to(root),
-            "RELEASE_SCENARIO_JSON",
-        )
-        if result is None:
+        run_dirs = sorted(path for path in runs_dir.iterdir() if path.is_dir())
+        if not run_dirs:
+            add_issue(
+                issues,
+                "error",
+                "RELEASE_SCENARIO_RESULT",
+                runs_dir.relative_to(root),
+                "At least one scored scenario run is required for release.",
+            )
             continue
-        check_scenario_provenance(
-            root,
-            scenario_id,
-            manifest,
-            result,
-            result_path.relative_to(root),
-            issues,
-        )
-        gates = result.get("hard_gates")
-        scores = result.get("quality_scores")
-        gates_pass = (
-            isinstance(gates, dict)
-            and set(gates) == HARD_GATES
-            and all(value is True for value in gates.values())
-        )
-        scores_valid = (
-            isinstance(scores, dict)
-            and set(scores) == QUALITY_DIMENSIONS
-            and all(isinstance(value, int) and 0 <= value <= 2 for value in scores.values())
-        )
-        total = sum(scores.values()) if scores_valid else -1
-        if result.get("scenario_id") != scenario_id:
-            add_issue(issues, "error", "RELEASE_SCENARIO_ID", result_path.relative_to(root), "Result id does not match scenario.")
-        if not gates_pass:
-            add_issue(issues, "error", "RELEASE_HARD_GATE", result_path.relative_to(root), "Every hard gate must pass.")
-        if not scores_valid or result.get("total") != total or total < 8:
-            add_issue(issues, "error", "RELEASE_SCORE", result_path.relative_to(root), "Quality scores must be valid and total at least 8/10.")
-        if scores_valid and (scores["evidence_quality"] == 0 or scores["boundary_control"] == 0):
-            add_issue(issues, "error", "RELEASE_CRITICAL_SCORE", result_path.relative_to(root), "Evidence quality and boundary control must be non-zero.")
-        if result.get("passed") is not True:
-            add_issue(issues, "error", "RELEASE_SCENARIO_PASS", result_path.relative_to(root), "Scenario must be explicitly marked passed.")
+
+        release_run = manifest.get("release_run")
+        release_run_found = False
+        for run_dir in run_dirs:
+            if run_dir.name == release_run:
+                release_run_found = True
+            response_path = run_dir / "response.md"
+            result_path = run_dir / "result.json"
+            allowed = {"response.md", "result.json"}
+            actual = {path.name for path in run_dir.iterdir()}
+            if actual != allowed:
+                add_issue(
+                    issues,
+                    "error",
+                    "RELEASE_RUN_LAYOUT",
+                    run_dir.relative_to(root),
+                    "Each run directory must contain exactly response.md and result.json.",
+                )
+            if not response_path.is_file() or not read_text(response_path).strip():
+                add_issue(
+                    issues,
+                    "error",
+                    "RELEASE_SCENARIO_RESPONSE",
+                    response_path.relative_to(root),
+                    "Raw scenario response is required for every recorded run.",
+                )
+            if not result_path.is_file():
+                add_issue(
+                    issues,
+                    "error",
+                    "RELEASE_SCENARIO_RESULT",
+                    result_path.relative_to(root),
+                    "Scored scenario result is required for every recorded run.",
+                )
+                continue
+            result = load_json(
+                result_path,
+                issues,
+                result_path.relative_to(root),
+                "RELEASE_SCENARIO_JSON",
+            )
+            if result is None:
+                continue
+            check_scenario_provenance(
+                root,
+                scenario_id,
+                manifest,
+                result,
+                result_path.relative_to(root),
+                response_path,
+                issues,
+            )
+            gates = result.get("hard_gates")
+            scores = result.get("quality_scores")
+            gates_valid = (
+                isinstance(gates, dict)
+                and set(gates) == HARD_GATES
+                and all(isinstance(value, bool) for value in gates.values())
+            )
+            scores_valid = (
+                isinstance(scores, dict)
+                and set(scores) == QUALITY_DIMENSIONS
+                and all(isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= 2 for value in scores.values())
+            )
+            total = sum(scores.values()) if scores_valid else -1
+            computed_pass = (
+                gates_valid
+                and all(gates.values())
+                and scores_valid
+                and total >= 8
+                and scores["evidence_quality"] > 0
+                and scores["boundary_control"] > 0
+            )
+            rel_result = result_path.relative_to(root)
+            if result.get("scenario_id") != scenario_id:
+                add_issue(issues, "error", "RELEASE_SCENARIO_ID", rel_result, "Result id does not match scenario.")
+            if not gates_valid:
+                add_issue(issues, "error", "RELEASE_HARD_GATE", rel_result, "Hard-gate results must be complete booleans.")
+            if not scores_valid or result.get("total") != total:
+                add_issue(issues, "error", "RELEASE_SCORE", rel_result, "Quality scores and total must be internally consistent.")
+            if result.get("passed") is not computed_pass:
+                add_issue(issues, "error", "RELEASE_SCENARIO_PASS", rel_result, "The passed flag must match gates and scoring thresholds.")
+            if run_dir.name == release_run and not computed_pass:
+                add_issue(issues, "error", "RELEASE_SELECTED_RUN", rel_result, "The manifest-selected release run must pass.")
+
+        if not release_run_found:
+            add_issue(
+                issues,
+                "error",
+                "RELEASE_SELECTED_RUN",
+                manifest_path.relative_to(root),
+                "release_run does not name an existing run directory.",
+            )
 
     installation_rel = Path("tests/installation/result.json")
     installation_path = root / installation_rel

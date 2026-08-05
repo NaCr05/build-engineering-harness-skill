@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import stat
 from pathlib import Path
 
@@ -98,3 +99,15 @@ def canonical_tree_sha256(root: Path) -> str:
         digest.update(str(record["sha256"]).encode("ascii"))
         digest.update(b"\n")
     return digest.hexdigest()
+
+
+def named_digest_sha256(domain: str, values: dict[str, str]) -> str:
+    """Hash a named set of digests with an explicit domain separator."""
+    payload = {
+        "domain": domain,
+        "values": {key: values[key] for key in sorted(values)},
+    }
+    encoded = json.dumps(
+        payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return sha256_bytes(encoded)

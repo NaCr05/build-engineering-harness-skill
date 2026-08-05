@@ -17,6 +17,9 @@ def expected_artifact_names(root: Path) -> set[str]:
         f"{base_name}.zip",
         f"{base_name}.zip.sha256",
         f"{base_name}.manifest.json",
+        "install.ps1",
+        "install.sh",
+        "install_skill.py",
     }
 
 
