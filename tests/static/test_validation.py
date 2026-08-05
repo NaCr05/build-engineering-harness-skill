@@ -71,13 +71,27 @@ class RepositoryValidationTests(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         playbook = root / "skill/build-engineering-harness/references/personal-ai-engineering-playbook.md"
         playbook.write_text(
-            playbook.read_text(encoding="utf-8") + "\n每个项目至少维护：\n",
+            playbook.read_text(encoding="utf-8")
+            + "\nEvery project must maintain these files: README, architecture, workflow, FAQ, and current-state.\n",
             encoding="utf-8",
         )
         self.assertIn("FIXED_DOC_CONFLICT", self.error_codes(root))
 
     def test_release_mode_requires_forward_test_evidence(self) -> None:
-        errors = self.error_codes(REPO_ROOT, release=True)
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+
+        scenario = root / "tests/scenarios/l1-small-project"
+        for name in ("response.md", "result.json"):
+            evidence = scenario / name
+            if evidence.exists():
+                evidence.unlink()
+
+        installation = root / "tests/installation/result.json"
+        if installation.exists():
+            installation.unlink()
+
+        errors = self.error_codes(root, release=True)
         self.assertIn("RELEASE_SCENARIO_RESPONSE", errors)
         self.assertIn("RELEASE_SCENARIO_RESULT", errors)
         self.assertIn("RELEASE_INSTALLATION", errors)
