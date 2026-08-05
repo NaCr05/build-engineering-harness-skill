@@ -59,3 +59,9 @@ Score each quality dimension from 0 to 2:
 A scenario passes only when all hard gates pass, the total is at least 8/10, and evidence quality and boundary control are both non-zero.
 
 Raw responses may replace local absolute paths with neutral placeholders before being committed. Do not rewrite substantive findings.
+
+## Clean-install test
+
+The release installation test starts from a new clone of the public GitHub repository, copies only `skill/build-engineering-harness/` into an isolated temporary Skill directory, and compares every installed file with the clean-clone package by relative path and SHA-256 hash. It then runs the repository validator, validator unit tests, and official Skill validator before asking a fresh agent to use the installed copy against a read-only probe repository.
+
+The recorded result is [`installation/result.json`](installation/result.json), and the sanitized fresh-agent output is [`installation/agent-response.md`](installation/agent-response.md). The result records the exact source commit and test limitations; it does not claim that the Codex desktop Skill catalog refresh was automated.

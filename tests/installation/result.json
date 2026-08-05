@@ -1,0 +1,21 @@
+{
+  "source_commit": "f4f1f6f4c4ba74ea51f076690c7f814f29251cb4",
+  "tested_at": "2026-08-05",
+  "passed": true,
+  "checks": [
+    "Cloned the public GitHub repository at the recorded commit into a new disposable directory on the D drive.",
+    "Copied only skill/build-engineering-harness into an isolated temporary Codex skills directory.",
+    "Matched all seven installed files to the clean-clone package by relative path and SHA-256 content hash.",
+    "Ran seven repository-validator unit tests successfully from the clean clone.",
+    "Ran dependency-free repository validation with zero errors and zero warnings from the clean clone.",
+    "Ran the official Skill quick validator in Python UTF-8 mode against the installed package successfully.",
+    "A fresh agent read the installed Skill and produced a proportional L1 assessment without reading the personal Skill installation.",
+    "The fresh-agent probe repository retained exactly its three original files with identical SHA-256 hashes."
+  ],
+  "agent_response": "agent-response.md",
+  "limitations": [
+    "The probe verified clean cloning, filesystem installation, package hash equality, structural validation, and fresh-agent use.",
+    "Automatic refresh or discovery in the Codex desktop Skill catalog was not exercised.",
+    "The representative repository fixtures are synthetic and do not replace broader observation across unrelated production repositories."
+  ]
+}
