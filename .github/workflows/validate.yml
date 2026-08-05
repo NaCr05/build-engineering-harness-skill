@@ -39,6 +39,9 @@ jobs:
       - name: Validate repository
         run: python scripts/validate_repository.py
 
+      - name: Build deterministic release package
+        run: python scripts/build_release_package.py --output-dir .test-runs/release-package --source-commit ${{ github.sha }}
+
   release-evidence:
     name: Validate release evidence
     if: startsWith(github.ref, 'refs/tags/v')
@@ -57,3 +60,6 @@ jobs:
 
       - name: Validate release evidence
         run: python scripts/validate_repository.py --release
+
+      - name: Build tagged release package
+        run: python scripts/build_release_package.py --output-dir dist --source-commit ${{ github.sha }}

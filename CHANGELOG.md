@@ -6,6 +6,21 @@ All notable changes to this project will be documented in this file.
 
 No unreleased changes.
 
+## [0.2.0-beta] - 2026-08-05
+
+### Added
+
+- Deterministic versioned Skill ZIP, SHA-256 checksum, and provenance manifest builder.
+- Cross-platform canonical hashing for prompts, fixtures, responses, expected findings, installed packages, and release archives.
+- Repository-native tests for deterministic packaging, artifact completeness, version synchronization, and evidence tampering.
+
+### Changed
+
+- Forward-test results now record a schema version, run ID, source commit, runner context, isolation statement, and canonical artifact hashes.
+- Clean-install evidence now binds the tested archive, checksum, manifest, installed tree, and fresh-agent response to reproducible hashes.
+- Installation guidance now defaults to version-pinned GitHub Release assets rather than a clone of the moving `main` branch.
+- GitHub Actions now builds the deterministic release package on Windows, Linux, and release tags.
+
 ## [0.1.1-beta] - 2026-08-05
 
 ### Added

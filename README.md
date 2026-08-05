@@ -4,7 +4,7 @@
 
 一个面向人类与 AI Agent 协作的软件工程 Skill：审计、建立和改进项目的目标、仓库知识、规则、验证与反馈闭环，并在项目完成后沉淀复盘和新人上手资料。
 
-> 当前状态：`v0.1.1-beta`。三组独立前向测试、GitHub 全新安装验证，以及 Windows/Linux GitHub Actions 均已通过。本版补齐了公开仓库的安全报告与反馈入口，仍是 Beta 预发布版。
+> 当前状态：`v0.2.0-beta`。测试证据已绑定运行溯源和可复算哈希，并提供带校验和与清单的版本化安装包。本版仍是 Beta 预发布版。
 
 ## 它解决什么问题
 
@@ -82,28 +82,51 @@ Skill 不会把普通的评估请求理解成写入许可，也不会因为偏�
 
 ## 安装
 
-### 1. 克隆本仓库
-
-将仓库克隆到本地并进入仓库根目录。
-
-### 2. 复制 Skill
+推荐从 GitHub Release 安装固定版本。以下命令需要 GitHub CLI；也可以在 [`v0.2.0-beta` Release](https://github.com/NaCr05/build-engineering-harness-skill/releases/tag/v0.2.0-beta) 页面手动下载同名的 ZIP、`.sha256` 和 manifest 文件。
 
 PowerShell：
 
 ```powershell
-$codexSkillsDir = Join-Path $env:USERPROFILE ".codex\skills"
-New-Item -ItemType Directory -Force -Path $codexSkillsDir | Out-Null
-Copy-Item -Recurse -Force ".\skill\build-engineering-harness" $codexSkillsDir
+$version = "v0.2.0-beta"
+$assetBase = "build-engineering-harness-$version"
+gh release download $version --repo NaCr05/build-engineering-harness-skill --pattern "$assetBase*"
+
+$expected = ((Get-Content "$assetBase.zip.sha256").Trim() -split '\s+')[0].ToLowerInvariant()
+$actual = (Get-FileHash "$assetBase.zip" -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($actual -ne $expected) { throw "Release archive checksum mismatch." }
+
+$skillsDir = Join-Path $env:USERPROFILE ".codex\skills"
+$target = Join-Path $skillsDir "build-engineering-harness"
+if (Test-Path $target) { throw "Target already exists: $target. Back it up or remove it before upgrading." }
+New-Item -ItemType Directory -Force -Path $skillsDir | Out-Null
+Expand-Archive -LiteralPath "$assetBase.zip" -DestinationPath $skillsDir
 ```
 
 macOS 或 Linux：
 
 ```bash
-mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
-cp -R ./skill/build-engineering-harness "${CODEX_HOME:-$HOME/.codex}/skills/"
+version="v0.2.0-beta"
+asset_base="build-engineering-harness-$version"
+gh release download "$version" --repo NaCr05/build-engineering-harness-skill --pattern "$asset_base*"
+
+expected="$(awk '{print $1}' "$asset_base.zip.sha256")"
+actual="$(python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$asset_base.zip")"
+[ "$actual" = "$expected" ] || { echo "Release archive checksum mismatch." >&2; exit 1; }
+
+skills_dir="${CODEX_HOME:-$HOME/.codex}/skills"
+target="$skills_dir/build-engineering-harness"
+[ ! -e "$target" ] || { echo "Target already exists: $target. Back it up or remove it before upgrading." >&2; exit 1; }
+mkdir -p "$skills_dir"
+unzip -q "$asset_base.zip" -d "$skills_dir"
 ```
 
-复制后新建一个 Codex 任务，让 Skill 列表重新加载。
+如需从源码安装，请克隆对应标签而不是移动中的 `main`：
+
+```bash
+git clone --branch v0.2.0-beta --depth 1 https://github.com/NaCr05/build-engineering-harness-skill.git
+```
+
+安装或升级后新建一个 Codex 任务，让 Skill 列表重新加载。
 
 ## 验证
 
@@ -112,6 +135,7 @@ cp -R ./skill/build-engineering-harness "${CODEX_HOME:-$HOME/.codex}/skills/"
 ```text
 python -m unittest discover -s tests/static -v
 python scripts/validate_repository.py
+python scripts/build_release_package.py --output-dir .test-runs/release-package
 ```
 
 GitHub Actions 会在 Windows 和 Linux 上运行相同检查。发布前还必须运行：
@@ -179,13 +203,14 @@ skill/build-engineering-harness/
 
 `SKILL.md` 是 Codex 实际加载的入口。`SKILL.zh-CN.md` 是供中文读者理解和核对的同步版本。详细方法按需放在 `references/`，可复制的输出模板放在 `assets/`。
 
-## `v0.1.1-beta` 验证证据
+## `v0.2.0-beta` 验证证据
 
 - L1、L2、L3 三组隔离前向测试均通过全部安全门禁，质量评分均为 10/10；原始回答与评分记录位于 [`tests/scenarios/`](tests/scenarios/)。
-- 已从公开 GitHub 仓库全新克隆并安装 Skill，完成文件哈希、仓库验证、官方 Skill 校验及全新 Agent 使用验证；证据见 [`tests/installation/result.json`](tests/installation/result.json)。
-- GitHub Actions 在 Windows 与 Linux 环境中执行验证；标签构建还会额外执行发布证据检查。
+- 前向测试证据记录运行 ID、源提交、隔离方式及 Skill、Prompt、Fixture、预期、响应的可复算 SHA-256；证据见 [`tests/scenarios/`](tests/scenarios/)。
+- 已从公开 GitHub 仓库构建并安装确定性版本化 ZIP，核对归档、校验和、manifest、源目录、安装目录和全新 Agent 响应；证据见 [`tests/installation/result.json`](tests/installation/result.json)。
+- GitHub Actions 在 Windows 与 Linux 环境执行验证和打包；标签构建还会额外执行发布证据检查。
 
-这些是可复现的代表性合成场景，不等同于对所有生产仓库的覆盖。`v0.1.1-beta` 未改变可安装 Skill 的行为，应作为预发布版使用，而不是稳定版承诺。
+这些是可复现的代表性合成场景，不等同于对所有生产仓库的覆盖。`v0.2.0-beta` 未改变可安装 Skill 的行为，应作为预发布版使用，而不是稳定版承诺。
 
 ## 参与贡献
 

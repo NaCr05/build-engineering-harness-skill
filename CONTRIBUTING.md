@@ -38,6 +38,7 @@ Run the repository-native checks:
 ```text
 python -m unittest discover -s tests/static -v
 python scripts/validate_repository.py
+python scripts/build_release_package.py --output-dir .test-runs/release-package
 ```
 
 Before tagging a release, run `python scripts/validate_repository.py --release`.
@@ -53,6 +54,8 @@ Also confirm:
 - the change does not weaken approval, safety, or product-code boundaries.
 
 Forward tests must use fresh tasks and disposable synthetic or public repositories. Pass raw fixtures rather than intended answers, and do not disclose evaluator expectations to the agent. Follow `tests/README.md`.
+
+Do not hand-edit recorded hashes. When an evidence-bearing prompt, fixture, response, expected result, installation artifact, or Skill file changes, rerun the applicable test and record hashes produced by `scripts/evidence_hashes.py` or the release-package builder. A stale hash is a release-blocking failure.
 
 ## Pull requests
 

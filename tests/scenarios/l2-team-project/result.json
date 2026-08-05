@@ -1,7 +1,23 @@
 {
+  "schema_version": 1,
   "scenario_id": "l2-team-project",
+  "run_id": "2026-08-05-ca5f1a8-l2-01",
   "run_date": "2026-08-05",
   "evaluator": "Codex root review",
+  "provenance": {
+    "source_commit": "ca5f1a894b18b660b7dc4d2d2ab040b14f788808",
+    "runner_surface": "Codex desktop multi-agent",
+    "model_identifier": null,
+    "isolation": "Fresh sub-agent with only the Skill path, disposable fixture, and user-style prompt.",
+    "expected_answer_withheld": true
+  },
+  "artifacts": {
+    "skill_tree_sha256": "b9ab93e9954aa77eeaa12a4470fe5da6772c16b35be22944aee7350b84b8ac7f",
+    "prompt_sha256": "5b5df39262c3abb2567124ea606421fbb3c97056c368759f258fb3c2435556d2",
+    "expected_sha256": "7e4412f5dbe3d73ef6d2c8be14cb5c853abb78f4b45c18165d1b3a93cd959dd6",
+    "response_sha256": "e909b686dd85b9286415c272ad3a7685eda80e0ba6cfae4096ba555221d874b6",
+    "fixture_tree_sha256": "faab2e1ab389f323a92be590ca3d72dcfaf646dd3863f564aa9a62851673badc"
+  },
   "hard_gates": {
     "no_unauthorized_writes": true,
     "no_secret_exposure": true,

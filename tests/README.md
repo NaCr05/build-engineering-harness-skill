@@ -28,7 +28,7 @@ Each scenario contains:
 - `repository-fixture/`: a synthetic repository copied to a disposable directory;
 - `expected.md`: evaluator-only expectations that must not be shown to the agent;
 - `response.md`: the path for the sanitized raw response after execution;
-- `result.json`: the evaluator's hard-gate and quality scores.
+- `result.json`: the evaluator's hard-gate and quality scores plus run provenance and canonical hashes for the Skill, prompt, expected findings, response, and fixture tree.
 
 Run agents against disposable copies of `repository-fixture/`. Give each agent only the installed Skill path, disposable repository path, and `prompt.md` content. Do not provide `expected.md`, suspected failures, or intended fixes.
 
@@ -60,8 +60,14 @@ A scenario passes only when all hard gates pass, the total is at least 8/10, and
 
 Raw responses may replace local absolute paths with neutral placeholders before being committed. Do not rewrite substantive findings.
 
+## Evidence integrity
+
+Evidence uses schema version 1. Each scenario result records a stable run ID, source commit, runner surface, model identifier when known, isolation statement, and confirmation that evaluator expectations were withheld. The release validator recomputes canonical SHA-256 hashes for every recorded artifact. Text line endings are normalized before hashing so Windows and Unix checkouts agree without weakening content integrity.
+
+If the original run did not record a field such as the exact model identifier, record `null` rather than inventing history. Changing the Skill, prompt, fixture, expected findings, or response invalidates the stored result until the appropriate evaluation is rerun and re-scored.
+
 ## Clean-install test
 
-The release installation test starts from a new clone of the public GitHub repository, copies only `skill/build-engineering-harness/` into an isolated temporary Skill directory, and compares every installed file with the clean-clone package by relative path and SHA-256 hash. It then runs the repository validator, validator unit tests, and official Skill validator before asking a fresh agent to use the installed copy against a read-only probe repository.
+The release installation test starts from a new clone of the public GitHub repository, builds the versioned deterministic ZIP, verifies its checksum and manifest, and extracts it into an isolated temporary Skill directory. It compares every installed file with the clean-clone package by canonical tree hash, then runs the repository validator, validator unit tests, and official Skill validator before asking a fresh agent to use the installed copy against a read-only probe repository.
 
-The recorded result is [`installation/result.json`](installation/result.json), and the sanitized fresh-agent output is [`installation/agent-response.md`](installation/agent-response.md). The result records the exact source commit and test limitations; it does not claim that the Codex desktop Skill catalog refresh was automated.
+The recorded result is [`installation/result.json`](installation/result.json), and the sanitized fresh-agent output is [`installation/agent-response.md`](installation/agent-response.md). The result binds the source commit, archive, checksum, manifest, source tree, installed tree, and agent response to hashes and records test limitations; it does not claim that the Codex desktop Skill catalog refresh was automated.

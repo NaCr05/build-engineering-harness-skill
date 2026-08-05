@@ -60,6 +60,26 @@ class RepositoryValidationTests(unittest.TestCase):
         )
         self.assertIn("PUBLIC_GOVERNANCE_DRIFT", self.error_codes(root))
 
+    def test_version_drift_is_blocking(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        readme = root / "README.en.md"
+        readme.write_text(
+            readme.read_text(encoding="utf-8").replace("v0.2.0-beta", "v9.9.9"),
+            encoding="utf-8",
+        )
+        self.assertIn("VERSION_DRIFT", self.error_codes(root))
+
+    def test_scenario_hash_tampering_is_blocking(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        prompt = root / "tests/scenarios/l1-small-project/prompt.md"
+        prompt.write_text(
+            prompt.read_text(encoding="utf-8") + "\nTampered after evaluation.\n",
+            encoding="utf-8",
+        )
+        self.assertIn("RELEASE_HASH_MISMATCH", self.error_codes(root, release=True))
+
     def test_broken_local_link_is_blocking(self) -> None:
         temporary, root = self.make_copy()
         self.addCleanup(temporary.cleanup)

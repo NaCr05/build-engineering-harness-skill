@@ -6,8 +6,8 @@ Only the latest published Beta receives security fixes.
 
 | Version | Supported |
 |---|---|
-| `0.1.1-beta` | Yes |
-| `0.1.0-beta` and earlier | No |
+| `0.2.0-beta` | Yes |
+| `0.1.x-beta` and earlier | No |
 
 ## Reporting a security issue
 

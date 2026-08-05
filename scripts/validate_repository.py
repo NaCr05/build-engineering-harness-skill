@@ -7,10 +7,14 @@ import argparse
 import json
 import re
 import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 from urllib.parse import unquote
+
+from build_release_package import build_release_artifacts
+from evidence_hashes import canonical_file_sha256, canonical_tree_sha256
 
 
 SKILL_NAME = "build-engineering-harness"
@@ -30,7 +34,11 @@ REQUIRED_ROOT_PATHS = {
     Path("README.en.md"),
     Path("README.md"),
     Path("SECURITY.md"),
+    Path("VERSION"),
+    Path("scripts/build_release_package.py"),
+    Path("scripts/evidence_hashes.py"),
     Path("scripts/validate_repository.py"),
+    Path("tests/static/test_packaging.py"),
     Path("tests/static/test_validation.py"),
 }
 
@@ -65,6 +73,10 @@ QUALITY_DIMENSIONS = {
     "actionability",
     "boundary_control",
 }
+
+VERSION_PATTERN = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?")
+SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
+COMMIT_PATTERN = re.compile(r"[0-9a-f]{40}")
 
 TEXT_SUFFIXES = {".md", ".yaml", ".yml", ".json", ".py", ".txt"}
 SKIP_DIRS = {".git", "__pycache__", ".pytest_cache", ".test-runs"}
@@ -161,6 +173,40 @@ def check_public_governance(root: Path, issues: list[Issue]) -> None:
                     rel,
                     f"Required public-governance marker is missing: {marker}",
                 )
+
+
+def check_version_consistency(root: Path, issues: list[Issue]) -> None:
+    version_path = root / "VERSION"
+    if not version_path.is_file():
+        return
+    version = read_text(version_path).strip()
+    if not VERSION_PATTERN.fullmatch(version):
+        add_issue(
+            issues,
+            "error",
+            "VERSION_FORMAT",
+            Path("VERSION"),
+            "VERSION must contain a semantic version with an optional prerelease suffix.",
+        )
+        return
+
+    required_markers = {
+        Path("README.md"): f"v{version}",
+        Path("README.en.md"): f"v{version}",
+        Path("CHANGELOG.md"): f"## [{version}]",
+        Path("SECURITY.md"): f"`{version}`",
+        Path(".github/ISSUE_TEMPLATE/bug-report.yml"): f"v{version}",
+    }
+    for rel, marker in required_markers.items():
+        path = root / rel
+        if path.is_file() and marker not in read_text(path):
+            add_issue(
+                issues,
+                "error",
+                "VERSION_DRIFT",
+                rel,
+                f"Current version marker is missing: {marker}",
+            )
 
 
 def check_skill_package_contents(root: Path, issues: list[Issue]) -> None:
@@ -513,6 +559,201 @@ def check_scenarios(root: Path, issues: list[Issue]) -> None:
             add_issue(issues, "error", "SCENARIO_EMPTY_FIXTURE", rel, "Fixture is empty.")
 
 
+def check_hash_value(
+    issues: list[Issue],
+    result_path: Path,
+    label: str,
+    recorded: object,
+    actual: str,
+) -> None:
+    if not isinstance(recorded, str) or not SHA256_PATTERN.fullmatch(recorded):
+        add_issue(
+            issues,
+            "error",
+            "RELEASE_HASH_FORMAT",
+            result_path,
+            f"{label} must be a lowercase SHA-256 digest.",
+        )
+    elif recorded != actual:
+        add_issue(
+            issues,
+            "error",
+            "RELEASE_HASH_MISMATCH",
+            result_path,
+            f"{label} does not match the current canonical artifact.",
+        )
+
+
+def check_scenario_provenance(
+    root: Path,
+    scenario_id: str,
+    manifest: dict,
+    result: dict,
+    result_path: Path,
+    issues: list[Issue],
+) -> None:
+    if result.get("schema_version") != 1:
+        add_issue(
+            issues,
+            "error",
+            "RELEASE_PROVENANCE_SCHEMA",
+            result_path,
+            "Scenario evidence must use provenance schema version 1.",
+        )
+    if not re.fullmatch(r"[0-9A-Za-z][0-9A-Za-z._-]+", str(result.get("run_id", ""))):
+        add_issue(
+            issues,
+            "error",
+            "RELEASE_RUN_ID",
+            result_path,
+            "Scenario evidence needs a stable run_id.",
+        )
+
+    provenance = result.get("provenance")
+    required_provenance = {
+        "source_commit",
+        "runner_surface",
+        "model_identifier",
+        "isolation",
+        "expected_answer_withheld",
+    }
+    if not isinstance(provenance, dict) or not required_provenance.issubset(provenance):
+        add_issue(
+            issues,
+            "error",
+            "RELEASE_PROVENANCE",
+            result_path,
+            "Scenario evidence is missing required run provenance.",
+        )
+    else:
+        if not COMMIT_PATTERN.fullmatch(str(provenance.get("source_commit", ""))):
+            add_issue(
+                issues,
+                "error",
+                "RELEASE_PROVENANCE_COMMIT",
+                result_path,
+                "Scenario provenance needs a full source commit SHA.",
+            )
+        if provenance.get("expected_answer_withheld") is not True:
+            add_issue(
+                issues,
+                "error",
+                "RELEASE_PROVENANCE_ISOLATION",
+                result_path,
+                "Scenario provenance must confirm that expected answers were withheld.",
+            )
+        if not str(provenance.get("runner_surface", "")).strip() or not str(
+            provenance.get("isolation", "")
+        ).strip():
+            add_issue(
+                issues,
+                "error",
+                "RELEASE_PROVENANCE_DETAIL",
+                result_path,
+                "Runner surface and isolation details must be recorded.",
+            )
+
+    scenario_dir = root / "tests/scenarios" / scenario_id
+    artifacts = result.get("artifacts")
+    required_artifacts = {
+        "skill_tree_sha256",
+        "prompt_sha256",
+        "expected_sha256",
+        "response_sha256",
+        "fixture_tree_sha256",
+    }
+    if not isinstance(artifacts, dict) or set(artifacts) != required_artifacts:
+        add_issue(
+            issues,
+            "error",
+            "RELEASE_ARTIFACT_HASHES",
+            result_path,
+            "Scenario evidence must record the complete artifact hash set.",
+        )
+        return
+
+    expected_path = scenario_dir / str(manifest.get("expected", "expected.md"))
+    response_path = scenario_dir / str(manifest.get("response", "response.md"))
+    prompt_path = scenario_dir / str(manifest.get("prompt", "prompt.md"))
+    fixture_path = scenario_dir / str(manifest.get("fixture", "repository-fixture"))
+    if not (
+        (root / SKILL_REL).is_dir()
+        and prompt_path.is_file()
+        and expected_path.is_file()
+        and response_path.is_file()
+        and fixture_path.is_dir()
+    ):
+        return
+    hash_targets = {
+        "skill_tree_sha256": canonical_tree_sha256(root / SKILL_REL),
+        "prompt_sha256": canonical_file_sha256(prompt_path),
+        "expected_sha256": canonical_file_sha256(expected_path),
+        "response_sha256": canonical_file_sha256(response_path),
+        "fixture_tree_sha256": canonical_tree_sha256(fixture_path),
+    }
+    for label, actual in hash_targets.items():
+        check_hash_value(issues, result_path, label, artifacts.get(label), actual)
+
+
+def check_installation_provenance(
+    root: Path, result: dict, result_path: Path, issues: list[Issue]
+) -> None:
+    if result.get("schema_version") != 1:
+        add_issue(
+            issues,
+            "error",
+            "RELEASE_INSTALLATION_SCHEMA",
+            result_path,
+            "Installation evidence must use provenance schema version 1.",
+        )
+    if not re.fullmatch(r"[0-9A-Za-z][0-9A-Za-z._-]+", str(result.get("run_id", ""))):
+        add_issue(
+            issues,
+            "error",
+            "RELEASE_INSTALLATION_RUN_ID",
+            result_path,
+            "Installation evidence needs a stable run_id.",
+        )
+
+    source_commit = str(result.get("source_commit", ""))
+    if not COMMIT_PATTERN.fullmatch(source_commit):
+        return
+    artifacts = result.get("artifacts")
+    required_artifacts = {
+        "archive_sha256",
+        "checksum_sha256",
+        "manifest_sha256",
+        "package_tree_sha256",
+        "installed_tree_sha256",
+        "agent_response_sha256",
+    }
+    if not isinstance(artifacts, dict) or set(artifacts) != required_artifacts:
+        add_issue(
+            issues,
+            "error",
+            "RELEASE_INSTALLATION_HASHES",
+            result_path,
+            "Installation evidence must record the complete artifact hash set.",
+        )
+        return
+
+    with tempfile.TemporaryDirectory() as directory:
+        built = build_release_artifacts(root, Path(directory), source_commit)
+        current_tree = str(built["package_tree_sha256"])
+        hash_targets = {
+            "archive_sha256": str(built["archive_sha256"]),
+            "checksum_sha256": str(built["checksum_sha256"]),
+            "manifest_sha256": str(built["manifest_sha256"]),
+            "package_tree_sha256": current_tree,
+            "installed_tree_sha256": current_tree,
+            "agent_response_sha256": canonical_file_sha256(
+                root / "tests/installation/agent-response.md"
+            ),
+        }
+    for label, actual in hash_targets.items():
+        check_hash_value(issues, result_path, label, artifacts.get(label), actual)
+
+
 def check_release_evidence(root: Path, issues: list[Issue]) -> None:
     scenarios_root = root / "tests/scenarios"
     for scenario_id in SCENARIOS:
@@ -555,6 +796,14 @@ def check_release_evidence(root: Path, issues: list[Issue]) -> None:
         )
         if result is None:
             continue
+        check_scenario_provenance(
+            root,
+            scenario_id,
+            manifest,
+            result,
+            result_path.relative_to(root),
+            issues,
+        )
         gates = result.get("hard_gates")
         scores = result.get("quality_scores")
         gates_pass = (
@@ -588,10 +837,11 @@ def check_release_evidence(root: Path, issues: list[Issue]) -> None:
         if result is not None:
             if result.get("passed") is not True:
                 add_issue(issues, "error", "RELEASE_INSTALLATION_PASS", installation_rel, "Clean installation must pass.")
-            if not re.fullmatch(r"[0-9a-f]{40}", str(result.get("source_commit", ""))):
+            if not COMMIT_PATTERN.fullmatch(str(result.get("source_commit", ""))):
                 add_issue(issues, "error", "RELEASE_INSTALLATION_COMMIT", installation_rel, "Installation evidence needs a full source commit SHA.")
             if not isinstance(result.get("checks"), list) or not result["checks"]:
                 add_issue(issues, "error", "RELEASE_INSTALLATION_CHECKS", installation_rel, "Installation evidence must list checks.")
+            check_installation_provenance(root, result, installation_rel, issues)
 
     pending_phrases = {
         "README.md": ["独立真实场景测试和全新环境安装测试仍待完成", "本发布候选尚未完成"],
@@ -619,6 +869,7 @@ def validate_repository(root: Path, release: bool = False) -> list[Issue]:
     issues: list[Issue] = []
     check_required_paths(root, issues)
     check_public_governance(root, issues)
+    check_version_consistency(root, issues)
     check_skill_package_contents(root, issues)
     check_skill_frontmatter(root, issues)
     check_openai_yaml(root, issues)
