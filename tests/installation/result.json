@@ -1,21 +1,40 @@
 {
-  "source_commit": "f4f1f6f4c4ba74ea51f076690c7f814f29251cb4",
+  "schema_version": 1,
+  "run_id": "2026-08-05-f0294b0-versioned-zip-01",
+  "source_commit": "f0294b06b201b1e1b2e6b0e65df0c9617019fc7f",
   "tested_at": "2026-08-05",
   "passed": true,
+  "environment": {
+    "host_os": "Windows",
+    "installation_source": "clean public GitHub clone",
+    "installation_method": "deterministic versioned ZIP extraction",
+    "runner_surface": "Codex desktop multi-agent"
+  },
+  "artifacts": {
+    "archive_sha256": "c9cf2fbfbfe978930fd2020969c7b2fe69d02d1057e6f73eb0f0b6e9dfe8575f",
+    "checksum_sha256": "f5e217d8112ed222f9037833057888fd0e6c9228de839585a68d9eb1230e168b",
+    "manifest_sha256": "924f3e76851f830a47f17cb28ab7c0cc61720c3e5a66f84cbf05a5bf190bde50",
+    "package_tree_sha256": "b9ab93e9954aa77eeaa12a4470fe5da6772c16b35be22944aee7350b84b8ac7f",
+    "installed_tree_sha256": "b9ab93e9954aa77eeaa12a4470fe5da6772c16b35be22944aee7350b84b8ac7f",
+    "agent_response_sha256": "fd3d572d9bfc5726a43963efa6329ddd8fa46494065046030e45e51a9fa234c9"
+  },
   "checks": [
     "Cloned the public GitHub repository at the recorded commit into a new disposable directory on the D drive.",
-    "Copied only skill/build-engineering-harness into an isolated temporary Codex skills directory.",
-    "Matched all seven installed files to the clean-clone package by relative path and SHA-256 content hash.",
-    "Ran seven repository-validator unit tests successfully from the clean clone.",
+    "Built the deterministic versioned ZIP, checksum, and manifest from that clean clone.",
+    "Verified the ZIP against its SHA-256 checksum before extraction.",
+    "Extracted the ZIP into an isolated temporary Codex skills directory with exactly seven packaged Skill files.",
+    "Matched the source package tree, manifest package tree, and installed package tree by canonical SHA-256.",
+    "Ran all thirteen repository-validator and packaging unit tests successfully from the clean clone.",
     "Ran dependency-free repository validation with zero errors and zero warnings from the clean clone.",
     "Ran the official Skill quick validator in Python UTF-8 mode against the installed package successfully.",
-    "A fresh agent read the installed Skill and produced a proportional L1 assessment without reading the personal Skill installation.",
-    "The fresh-agent probe repository retained exactly its three original files with identical SHA-256 hashes."
+    "A fresh agent read only the installed Skill and produced a proportional L1 assessment without reading expected answers or the developer Skill installation.",
+    "The fresh-agent probe repository retained exactly its three original files with an identical canonical tree hash."
   ],
   "agent_response": "agent-response.md",
   "limitations": [
-    "The probe verified clean cloning, filesystem installation, package hash equality, structural validation, and fresh-agent use.",
+    "The probe verified clean cloning, deterministic packaging, checksum verification, filesystem installation, structural validation, and fresh-agent use.",
     "Automatic refresh or discovery in the Codex desktop Skill catalog was not exercised.",
-    "The representative repository fixtures are synthetic and do not replace broader observation across unrelated production repositories."
+    "The representative repository fixture is synthetic and does not replace broader observation across unrelated production repositories.",
+    "The runner surface was recorded, but the fresh-agent model identifier was not exposed by the orchestration interface."
   ]
 }
