@@ -4,7 +4,7 @@
 
 An engineering Skill for reliable collaboration between humans and AI agents. It audits, establishes, and improves project goals, repository knowledge, rules, verification, and feedback loops, then captures evidence-based retrospective and onboarding knowledge when a project closes.
 
-> Status: `v0.2.0-beta`. Test evidence is now bound to run provenance and recomputable hashes, and the release provides a versioned installation archive with a checksum and manifest. This remains a Beta pre-release.
+> Current candidate: `v0.3.0-beta`. This iteration adds byte-for-byte cross-platform comparison, build provenance, and automatic draft prereleases for the versioned package. The latest published version remains `v0.2.0-beta`.
 
 ## What it solves
 
@@ -70,7 +70,7 @@ Choose a level from risk, collaboration size, change rate, agent involvement, an
 
 ## Installation
 
-Install a pinned version from GitHub Releases. The commands below require GitHub CLI; you can instead download the ZIP, `.sha256`, and manifest with matching names from the [`v0.2.0-beta` Release](https://github.com/NaCr05/build-engineering-harness-skill/releases/tag/v0.2.0-beta) page.
+Install a pinned, published GitHub Release. CI will first create `v0.3.0-beta` as a draft prerelease; until it is reviewed and published, the commands below continue to install [`v0.2.0-beta`](https://github.com/NaCr05/build-engineering-harness-skill/releases/tag/v0.2.0-beta).
 
 PowerShell:
 
@@ -134,6 +134,8 @@ python scripts/validate_repository.py --release
 
 `--release` additionally requires L1, L2, and L3 forward-test evidence plus a clean installation record from GitHub. See `tests/README.md` for scenario isolation and scoring.
 
+CI uploads the Windows and Linux builds separately, then uses `scripts/compare_release_artifacts.py` to compare the ZIP, checksum, and manifest byte for byte. A version tag generates GitHub Artifact Attestations and a draft prerelease only after cross-platform comparison and release-evidence validation pass. Formal packaging also requires committed `VERSION` and Skill inputs that match the recorded source commit.
+
 ## Quick usage
 
 ### Assess an existing repository
@@ -195,14 +197,16 @@ skill/build-engineering-harness/
 
 `SKILL.md` is the runtime entry loaded by Codex. `SKILL.zh-CN.md` is a synchronized human-readable Chinese translation. Detailed methods live in `references/`; reusable output templates live in `assets/`.
 
-## `v0.2.0-beta` validation evidence
+## `v0.3.0-beta` candidate evidence
 
 - The isolated L1, L2, and L3 forward tests passed every safety gate with 10/10 quality scores. Sanitized responses and scored results live under [`tests/scenarios/`](tests/scenarios/).
 - Forward-test evidence records the run ID, source commit, isolation method, and recomputable SHA-256 hashes for the Skill, prompt, fixture, expectations, and response. See [`tests/scenarios/`](tests/scenarios/).
 - A deterministic versioned ZIP was built and installed from the public GitHub repository; the archive, checksum, manifest, source tree, installed tree, and fresh-agent response were verified. See [`tests/installation/result.json`](tests/installation/result.json).
-- GitHub Actions validates and packages on Windows and Linux; tag builds additionally run release-evidence validation.
+- `v0.3.0-beta` does not change installable Skill behavior and retains the same Skill tree and existing L1, L2, and L3 forward-test evidence.
+- GitHub Actions is configured to upload Windows and Linux builds, compare every release asset, validate release evidence, generate Artifact Attestations, and create a draft prerelease automatically.
+- Every third-party Action is pinned to a full commit SHA; formal packaging rejects source-commit mismatch, uncommitted package inputs, symbolic links, junctions, and special files.
 
-These are reproducible representative synthetic scenarios, not coverage of every production repository. `v0.2.0-beta` does not change the installable Skill behavior; use it as a pre-release rather than a stable-release promise.
+These are reproducible representative synthetic scenarios, not coverage of every production repository. Until the `v0.3.0-beta` draft prerelease is reviewed and published, it is not a public install target or a stable-release promise.
 
 ## Contributing
 

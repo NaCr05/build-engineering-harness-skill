@@ -21,6 +21,7 @@ from evidence_hashes import (
 SKILL_NAME = "build-engineering-harness"
 VERSION_PATTERN = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?")
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
+PACKAGE_INPUTS = ("VERSION", f"skill/{SKILL_NAME}")
 
 
 def read_version(root: Path) -> str:
@@ -43,13 +44,71 @@ def git_commit(root: Path) -> str:
     return commit
 
 
+def validate_source_commit(root: Path, source_commit: str) -> None:
+    if not (root / ".git").exists():
+        raise ValueError("Source-commit verification requires a Git checkout.")
+
+    commit_exists = subprocess.run(
+        ["git", "-C", str(root), "cat-file", "-e", f"{source_commit}^{{commit}}"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if commit_exists.returncode != 0:
+        raise ValueError(f"source_commit does not identify a local commit: {source_commit}")
+
+    is_ancestor = subprocess.run(
+        ["git", "-C", str(root), "merge-base", "--is-ancestor", source_commit, "HEAD"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if is_ancestor.returncode != 0:
+        raise ValueError("source_commit must be HEAD or an ancestor of HEAD.")
+
+    differs = subprocess.run(
+        ["git", "-C", str(root), "diff", "--quiet", source_commit, "--", *PACKAGE_INPUTS],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if differs.returncode == 1:
+        raise ValueError("Package inputs do not match source_commit.")
+    if differs.returncode != 0:
+        raise ValueError("Git could not compare package inputs with source_commit.")
+
+    untracked = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(root),
+            "status",
+            "--porcelain=v1",
+            "--untracked-files=all",
+            "--",
+            *PACKAGE_INPUTS,
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    if untracked.stdout.strip():
+        raise ValueError("Package inputs contain uncommitted changes.")
+
+
 def build_release_artifacts(
-    root: Path, output_dir: Path, source_commit: str
+    root: Path,
+    output_dir: Path,
+    source_commit: str,
+    *,
+    verify_source: bool = True,
 ) -> dict[str, Path | str]:
     root = root.resolve()
     output_dir = output_dir.resolve()
     if not re.fullmatch(r"[0-9a-f]{40}", source_commit):
         raise ValueError("source_commit must be a full lowercase commit SHA.")
+    if verify_source:
+        validate_source_commit(root, source_commit)
 
     version = read_version(root)
     skill_root = root / "skill" / SKILL_NAME

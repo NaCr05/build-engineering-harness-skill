@@ -2,10 +2,11 @@
 
 ## Supported versions
 
-Only the latest published Beta receives security fixes.
+Only the latest published Beta receives security fixes. Draft release candidates are not supported until they are reviewed and published.
 
 | Version | Supported |
 |---|---|
+| `0.3.0-beta` (draft candidate) | Not until published |
 | `0.2.0-beta` | Yes |
 | `0.1.x-beta` and earlier | No |
 

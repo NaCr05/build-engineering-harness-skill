@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -11,7 +13,12 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-from build_release_package import build_release_artifacts, read_version  # noqa: E402
+from build_release_package import (  # noqa: E402
+    build_release_artifacts,
+    read_version,
+    validate_source_commit,
+)
+from compare_release_artifacts import compare_release_directories  # noqa: E402
 from evidence_hashes import canonical_bytes, iter_tree_files, raw_file_sha256  # noqa: E402
 
 
@@ -21,10 +28,10 @@ class ReleasePackagingTests(unittest.TestCase):
     def test_release_archive_is_deterministic_and_complete(self) -> None:
         with tempfile.TemporaryDirectory() as first_dir, tempfile.TemporaryDirectory() as second_dir:
             first = build_release_artifacts(
-                REPO_ROOT, Path(first_dir), self.source_commit
+                REPO_ROOT, Path(first_dir), self.source_commit, verify_source=False
             )
             second = build_release_artifacts(
-                REPO_ROOT, Path(second_dir), self.source_commit
+                REPO_ROOT, Path(second_dir), self.source_commit, verify_source=False
             )
 
             self.assertEqual(first["archive_sha256"], second["archive_sha256"])
@@ -48,7 +55,7 @@ class ReleasePackagingTests(unittest.TestCase):
     def test_manifest_and_checksum_describe_the_archive(self) -> None:
         with tempfile.TemporaryDirectory() as output_dir:
             artifacts = build_release_artifacts(
-                REPO_ROOT, Path(output_dir), self.source_commit
+                REPO_ROOT, Path(output_dir), self.source_commit, verify_source=False
             )
             manifest = json.loads(Path(artifacts["manifest"]).read_text(encoding="utf-8"))
             archive = Path(artifacts["archive"])
@@ -62,6 +69,76 @@ class ReleasePackagingTests(unittest.TestCase):
                 f"{manifest['archive']['sha256']}  {archive.name}\n", checksum
             )
             self.assertEqual(7, manifest["package"]["file_count"])
+
+    def test_cross_platform_comparison_rejects_any_byte_difference(self) -> None:
+        with tempfile.TemporaryDirectory() as left_dir, tempfile.TemporaryDirectory() as right_dir:
+            left = build_release_artifacts(
+                REPO_ROOT, Path(left_dir), self.source_commit, verify_source=False
+            )
+            build_release_artifacts(
+                REPO_ROOT, Path(right_dir), self.source_commit, verify_source=False
+            )
+
+            hashes = compare_release_directories(
+                REPO_ROOT, Path(left_dir), Path(right_dir)
+            )
+            self.assertEqual(3, len(hashes))
+
+            checksum = Path(right_dir) / Path(left["checksum"]).name
+            checksum.write_text(
+                checksum.read_text(encoding="utf-8") + "tampered\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "Cross-platform artifact mismatch"):
+                compare_release_directories(REPO_ROOT, Path(left_dir), Path(right_dir))
+
+    def test_tree_hashing_rejects_symbolic_links(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "target.txt"
+            link = root / "linked.txt"
+            target.write_text("safe\n", encoding="utf-8")
+            try:
+                os.symlink(target, link)
+            except OSError as exc:
+                self.skipTest(f"Symbolic links are unavailable: {exc}")
+            with self.assertRaisesRegex(ValueError, "symbolic link or junction"):
+                iter_tree_files(root)
+
+    def test_source_commit_must_exist_and_match_package_inputs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            skill_root = root / "skill/build-engineering-harness"
+            skill_root.mkdir(parents=True)
+            (root / "VERSION").write_text("0.0.0-test\n", encoding="utf-8")
+            (skill_root / "SKILL.md").write_text("test\n", encoding="utf-8")
+
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            subprocess.run(
+                ["git", "-C", str(root), "config", "user.email", "test@example.invalid"],
+                check=True,
+            )
+            subprocess.run(
+                ["git", "-C", str(root), "config", "user.name", "Test"], check=True
+            )
+            subprocess.run(["git", "-C", str(root), "add", "."], check=True)
+            subprocess.run(
+                ["git", "-C", str(root), "commit", "-q", "-m", "fixture"], check=True
+            )
+            commit = subprocess.run(
+                ["git", "-C", str(root), "rev-parse", "HEAD"],
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout.strip()
+
+            validate_source_commit(root, commit)
+            with self.assertRaisesRegex(ValueError, "does not identify a local commit"):
+                validate_source_commit(root, "f" * 40)
+
+            (root / "VERSION").write_text("0.0.1-test\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "do not match source_commit"):
+                validate_source_commit(root, commit)
 
 
 if __name__ == "__main__":

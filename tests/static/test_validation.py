@@ -65,10 +65,34 @@ class RepositoryValidationTests(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         readme = root / "README.en.md"
         readme.write_text(
-            readme.read_text(encoding="utf-8").replace("v0.2.0-beta", "v9.9.9"),
+            readme.read_text(encoding="utf-8").replace("v0.3.0-beta", "v9.9.9"),
             encoding="utf-8",
         )
         self.assertIn("VERSION_DRIFT", self.error_codes(root))
+
+    def test_unpinned_action_is_blocking(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        workflow = root / ".github/workflows/validate.yml"
+        workflow.write_text(
+            workflow.read_text(encoding="utf-8").replace(
+                "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+                "actions/checkout@v6",
+                1,
+            ),
+            encoding="utf-8",
+        )
+        self.assertIn("UNPINNED_ACTION", self.error_codes(root))
+
+    def test_missing_attestation_step_is_blocking(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        workflow = root / ".github/workflows/validate.yml"
+        workflow.write_text(
+            workflow.read_text(encoding="utf-8").replace("actions/attest@", "actions/not-attest@"),
+            encoding="utf-8",
+        )
+        self.assertIn("TRUSTED_RELEASE_WORKFLOW", self.error_codes(root))
 
     def test_scenario_hash_tampering_is_blocking(self) -> None:
         temporary, root = self.make_copy()

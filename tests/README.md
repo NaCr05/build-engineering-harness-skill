@@ -71,3 +71,9 @@ If the original run did not record a field such as the exact model identifier, r
 The release installation test starts from a new clone of the public GitHub repository, builds the versioned deterministic ZIP, verifies its checksum and manifest, and extracts it into an isolated temporary Skill directory. It compares every installed file with the clean-clone package by canonical tree hash, then runs the repository validator, validator unit tests, and official Skill validator before asking a fresh agent to use the installed copy against a read-only probe repository.
 
 The recorded result is [`installation/result.json`](installation/result.json), and the sanitized fresh-agent output is [`installation/agent-response.md`](installation/agent-response.md). The result binds the source commit, archive, checksum, manifest, source tree, installed tree, and agent response to hashes and records test limitations; it does not claim that the Codex desktop Skill catalog refresh was automated.
+
+The source commit must exist in the tested clone, be HEAD or its ancestor, and contain the exact committed `VERSION` and Skill tree used for packaging. Release builds reject uncommitted package inputs, symbolic links, junctions, and special files.
+
+## Cross-platform release evidence
+
+Windows and Linux CI jobs upload their three generated assets independently. A downstream job downloads both sets and runs `scripts/compare_release_artifacts.py`; every filename and byte-level SHA-256 must match. Tagged builds then validate release evidence, attest the verified assets, and create or refresh a draft prerelease. The draft is the review boundary: published assets must originate from that workflow rather than a separate local rebuild.

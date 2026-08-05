@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import hashlib
+import stat
 from pathlib import Path
 
 
@@ -53,15 +54,22 @@ def raw_file_sha256(path: Path) -> str:
 
 
 def iter_tree_files(root: Path) -> list[Path]:
-    return sorted(
-        (
-            path
-            for path in root.rglob("*")
-            if path.is_file()
-            and not any(part in SKIP_DIRS for part in path.relative_to(root).parts)
-        ),
-        key=lambda path: path.relative_to(root).as_posix(),
-    )
+    files: list[Path] = []
+    for path in root.rglob("*"):
+        relative = path.relative_to(root)
+        if any(part in SKIP_DIRS for part in relative.parts):
+            continue
+
+        mode = path.lstat().st_mode
+        is_junction = getattr(path, "is_junction", lambda: False)()
+        if stat.S_ISLNK(mode) or is_junction:
+            raise ValueError(f"Tree contains a symbolic link or junction: {relative}")
+        if stat.S_ISREG(mode):
+            files.append(path)
+        elif not stat.S_ISDIR(mode):
+            raise ValueError(f"Tree contains an unsupported special file: {relative}")
+
+    return sorted(files, key=lambda path: path.relative_to(root).as_posix())
 
 
 def tree_records(root: Path) -> list[dict[str, str | int]]:
