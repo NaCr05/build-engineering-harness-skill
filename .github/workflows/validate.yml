@@ -41,6 +41,10 @@ jobs:
         if: github.event_name == 'pull_request'
         run: python scripts/check_append_only_runs.py --base-ref origin/${{ github.base_ref }}
 
+      - name: Enforce changelog synchronization
+        if: github.event_name == 'pull_request'
+        run: python scripts/check_changelog.py --base-ref origin/${{ github.base_ref }}
+
       - name: Test the validator
         run: python -m unittest discover -s tests/static -v
 
@@ -74,9 +78,54 @@ jobs:
           retention-days: 14
           compression-level: 0
 
+  compatibility:
+    name: Compatibility on ${{ matrix.os }} / Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: "3.10"
+          - os: ubuntu-latest
+            python: "3.11"
+          - os: ubuntu-latest
+            python: "3.13"
+          - os: macos-latest
+            python: "3.12"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Test repository tooling
+        run: python -m unittest discover -s tests/static -v
+
+      - name: Validate repository
+        run: python scripts/validate_repository.py
+
+      - name: Smoke-test macOS POSIX installer
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/build_release_package.py --output-dir .test-runs/release-package --source-commit ${{ github.sha }}
+          version="v$(tr -d '\r\n' < VERSION)"
+          sh .test-runs/release-package/install.sh --version "$version" --asset-dir .test-runs/release-package --codex-home .test-runs/isolated-codex-home --dry-run
+
   compare-artifacts:
     name: Compare Windows and Linux release artifacts
-    needs: validate
+    needs:
+      - validate
+      - compatibility
     runs-on: ubuntu-latest
     timeout-minutes: 5
 

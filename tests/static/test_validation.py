@@ -73,6 +73,30 @@ class RepositoryValidationTests(unittest.TestCase):
         )
         self.assertIn("PUBLIC_GOVERNANCE_DRIFT", self.error_codes(root))
 
+    def test_missing_documented_support_scope_is_blocking(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        readme = root / "README.en.md"
+        readme.write_text(
+            readme.read_text(encoding="utf-8").replace(
+                "CPython 3.10–3.13", "Supported Python versions"
+            ),
+            encoding="utf-8",
+        )
+        self.assertIn("PUBLIC_GOVERNANCE_DRIFT", self.error_codes(root))
+
+    def test_missing_dependabot_actions_configuration_is_blocking(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        dependabot = root / ".github/dependabot.yml"
+        dependabot.write_text(
+            dependabot.read_text(encoding="utf-8").replace(
+                "package-ecosystem: github-actions", "package-ecosystem: pip"
+            ),
+            encoding="utf-8",
+        )
+        self.assertIn("PUBLIC_GOVERNANCE_DRIFT", self.error_codes(root))
+
     def test_readme_section_order_is_blocking(self) -> None:
         temporary, root = self.make_copy()
         self.addCleanup(temporary.cleanup)

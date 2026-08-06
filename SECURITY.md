@@ -4,7 +4,7 @@
 
 Only the latest published Beta receives security fixes. [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) is the source of truth for publication status. A version appearing on `main`, in `VERSION`, or in release-preparation documentation does not by itself mean that it is published or supported.
 
-The current repository version is `0.3.2-beta`; apply the policy below to its actual status on GitHub Releases.
+The current repository version is `0.3.3-beta`; apply the policy below to its actual status on GitHub Releases.
 
 | Release class | Supported |
 |---|---|

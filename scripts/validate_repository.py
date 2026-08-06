@@ -28,6 +28,7 @@ SKILL_REL = Path("skill") / SKILL_NAME
 
 REQUIRED_ROOT_PATHS = {
     Path(".gitattributes"),
+    Path(".github/dependabot.yml"),
     Path(".github/ISSUE_TEMPLATE/bug-report.yml"),
     Path(".github/ISSUE_TEMPLATE/config.yml"),
     Path(".github/ISSUE_TEMPLATE/scenario-proposal.yml"),
@@ -43,6 +44,7 @@ REQUIRED_ROOT_PATHS = {
     Path("VERSION"),
     Path("scripts/build_release_package.py"),
     Path("scripts/check_append_only_runs.py"),
+    Path("scripts/check_changelog.py"),
     Path("scripts/compare_release_artifacts.py"),
     Path("scripts/evidence_hashes.py"),
     Path("scripts/install.ps1"),
@@ -50,6 +52,7 @@ REQUIRED_ROOT_PATHS = {
     Path("scripts/install_skill.py"),
     Path("scripts/validate_repository.py"),
     Path("tests/static/test_packaging.py"),
+    Path("tests/static/test_changelog.py"),
     Path("tests/static/test_installer.py"),
     Path("tests/static/test_validation.py"),
 }
@@ -156,12 +159,21 @@ def check_public_governance(root: Path, issues: list[Issue]) -> None:
             "gh attestation verify",
             "--source-ref",
             "--signer-workflow",
+            "CPython 3.10–3.13",
+            "PowerShell 7",
         ],
         Path("README.en.md"): [
             "https://github.com/NaCr05/build-engineering-harness-skill/releases",
             "gh attestation verify",
             "--source-ref",
             "--signer-workflow",
+            "CPython 3.10–3.13",
+            "PowerShell 7",
+        ],
+        Path("CONTRIBUTING.md"): [
+            "scripts/check_changelog.py",
+            "CPython 3.10 through 3.13",
+            "Windows PowerShell 5.1",
         ],
         Path("CHANGELOG.md"): ["## [Unreleased]"],
         Path("SECURITY.md"): [
@@ -182,6 +194,10 @@ def check_public_governance(root: Path, issues: list[Issue]) -> None:
             "name: Forward-test scenario proposal",
             "body:",
             "validations:",
+        ],
+        Path(".github/dependabot.yml"): [
+            "package-ecosystem: github-actions",
+            "interval: monthly",
         ],
     }
     for rel, markers in required_markers.items():
@@ -379,6 +395,10 @@ def check_trusted_release_workflow(root: Path, issues: list[Issue]) -> None:
         "actions/attest@": "Tagged release archives must receive a GitHub artifact attestation.",
         "compare_release_artifacts.py": "CI must compare Windows and Linux release artifacts.",
         "check_append_only_runs.py": "Pull requests must reject changes to historical run evidence.",
+        "check_changelog.py": "Pull requests must keep release-relevant changes synchronized with the changelog.",
+        "macos-latest": "CI must validate the documented macOS support path.",
+        'python: "3.10"': "CI must validate the documented minimum Python version.",
+        'python: "3.13"': "CI must validate the documented maximum Python version.",
         "install.ps1": "CI must smoke-test the PowerShell safe installer.",
         "install.sh": "CI must smoke-test the POSIX safe installer.",
         "attestations: write": "The release job needs permission to publish attestations.",
