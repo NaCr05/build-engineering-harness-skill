@@ -158,6 +158,11 @@ jobs:
           set -euo pipefail
           tag="${GITHUB_REF_NAME}"
           if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            release_is_draft="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)"
+            if [[ "$release_is_draft" != "true" ]]; then
+              echo "Refusing to overwrite assets for published release $tag." >&2
+              exit 1
+            fi
             gh release upload "$tag" dist/* --clobber --repo "$GITHUB_REPOSITORY"
           else
             release_flags=(--draft --verify-tag --generate-notes --title "$tag")

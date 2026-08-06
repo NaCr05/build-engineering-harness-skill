@@ -382,7 +382,7 @@ def install_from_assets(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--version", help="Pinned release version, for example v0.3.1-beta.")
+    parser.add_argument("--version", help="Pinned release version, for example v0.3.2-beta.")
     parser.add_argument("--repo", default=DEFAULT_REPOSITORY, help="GitHub owner/repository.")
     parser.add_argument("--asset-dir", type=Path, help="Use already-downloaded release assets.")
     parser.add_argument("--codex-home", help="Override CODEX_HOME for the installation target.")

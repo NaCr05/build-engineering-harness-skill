@@ -61,6 +61,29 @@ class RepositoryValidationTests(unittest.TestCase):
         )
         self.assertIn("PUBLIC_GOVERNANCE_DRIFT", self.error_codes(root))
 
+    def test_missing_installation_attestation_guidance_is_blocking(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        readme = root / "README.en.md"
+        readme.write_text(
+            readme.read_text(encoding="utf-8").replace(
+                "gh attestation verify", "gh provenance check"
+            ),
+            encoding="utf-8",
+        )
+        self.assertIn("PUBLIC_GOVERNANCE_DRIFT", self.error_codes(root))
+
+    def test_volatile_publication_status_is_blocking(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        readme = root / "README.en.md"
+        readme.write_text(
+            readme.read_text(encoding="utf-8")
+            + "\nThe latest published version remains `v0.0.0-beta`.\n",
+            encoding="utf-8",
+        )
+        self.assertIn("VOLATILE_RELEASE_STATE", self.error_codes(root))
+
     def test_version_drift_is_blocking(self) -> None:
         temporary, root = self.make_copy()
         self.addCleanup(temporary.cleanup)
@@ -95,6 +118,21 @@ class RepositoryValidationTests(unittest.TestCase):
             encoding="utf-8",
         )
         self.assertIn("TRUSTED_RELEASE_WORKFLOW", self.error_codes(root))
+
+    def test_published_release_overwrite_guard_is_blocking(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        workflow = root / ".github/workflows/validate.yml"
+        workflow.write_text(
+            workflow.read_text(encoding="utf-8").replace(
+                'if [[ "$release_is_draft" != "true" ]]; then',
+                'if [[ "$release_is_draft" == "true" ]]; then',
+            ),
+            encoding="utf-8",
+        )
+        self.assertIn(
+            "PUBLISHED_RELEASE_OVERWRITE_GUARD", self.error_codes(root)
+        )
 
     def test_scenario_hash_tampering_is_blocking(self) -> None:
         temporary, root = self.make_copy()

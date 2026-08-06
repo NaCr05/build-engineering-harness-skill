@@ -1,46 +1,47 @@
 {
   "schema_version": 2,
-  "run_id": "2026-08-05-0d68d71-safe-installer-04",
-  "source_commit": "0d68d71edcc91ba30e4bfb36a9382675de3e7a1f",
-  "tested_at": "2026-08-05",
+  "run_id": "2026-08-06-fb59c60-safe-installer-05",
+  "source_commit": "fb59c60cb74bea092f9baacfc57b049402758c26",
+  "tested_at": "2026-08-06",
   "passed": true,
   "environment": {
     "host_os": "Windows with WSL",
-    "installation_source": "clean clone of the public GitHub feature branch at the recorded commit",
+    "installation_source": "clean committed feature-branch working tree at the recorded commit",
     "installation_method": "manifest-verified safe installer with dry-run, upgrade backup, and rollback unit test",
     "runner_surface": "Codex desktop local verification"
   },
   "artifacts": {
     "archive_sha256": "c9cf2fbfbfe978930fd2020969c7b2fe69d02d1057e6f73eb0f0b6e9dfe8575f",
-    "checksum_sha256": "92590ea6909735f0044dae5f0d38c2428d8a182b90cbf457a24ca9d2e0b5638c",
-    "manifest_sha256": "689f74fa89c9239e2b19234a54157c04552eb8202464ee16cf7afe1ee09ee26c",
+    "checksum_sha256": "ffa124e8fd84fa751c393a5e337311453d2dfcc6936db8682b6d9741fc0f78f8",
+    "manifest_sha256": "b0f394690636dbebd590b845453544abf1a49be69a2f72a097421c6dd64246f5",
     "package_tree_sha256": "b9ab93e9954aa77eeaa12a4470fe5da6772c16b35be22944aee7350b84b8ac7f",
     "installed_tree_sha256": "b9ab93e9954aa77eeaa12a4470fe5da6772c16b35be22944aee7350b84b8ac7f",
     "agent_response_sha256": "fd3d572d9bfc5726a43963efa6329ddd8fa46494065046030e45e51a9fa234c9",
-    "installer_python_sha256": "b7a4d1815778370bf903c5ca9b44ed632e1db27aba4dabf34c45f4ba0cd6d024",
+    "installer_python_sha256": "42b3d08e2f1f1c6797746fa0ad2a27d53f27cb476e313bbecf6bb0d0ee6338a8",
     "installer_powershell_sha256": "268291b91da7b02565651e81602dffad6818ed2b60b291bc5fe4e0160b524529",
     "installer_shell_sha256": "e73eea5b501ea5c174229c7f38cd867bf55015577943807a2b994e8c95304efc"
   },
   "checks": [
-    "Cloned the public GitHub feature branch at the recorded commit into a new disposable directory on the D drive.",
-    "Built the deterministic six-asset release set with source-commit enforcement from that clean clone.",
+    "Built the deterministic six-asset release set with source-commit enforcement from a clean committed feature-branch working tree at the recorded commit.",
     "Ran the packaged PowerShell installer in dry-run mode and confirmed it created no CODEX_HOME target.",
     "Installed into an isolated Codex home, then upgraded the same target and retained the previous verified installation as a unique backup.",
     "Matched the source package tree, installed tree, and upgrade-backup tree by canonical SHA-256.",
     "Ran the packaged POSIX shell installer in WSL dry-run mode against the same verified release assets.",
     "Verified path-traversal rejection, installer-tamper rejection, and automatic restoration after an injected post-backup failure through repository-native tests.",
-    "Ran all twenty-seven repository-validator, packaging, and installer tests successfully from the clean clone; the Windows symbolic-link creation case was skipped because the host lacks that operating-system privilege.",
-    "Ran dependency-free repository validation with zero errors and zero warnings from the clean clone.",
-    "Ran the official Skill quick validator against the isolated installed package successfully.",
+    "Ran all thirty repository-validator, packaging, and installer tests successfully; the Windows symbolic-link creation case was skipped because the host lacks that operating-system privilege.",
+    "Ran dependency-free repository validation with zero errors and zero warnings.",
+    "Ran the official Skill quick validator in UTF-8 mode against the repository Skill package successfully.",
+    "Verified the documented repository, tag, and signer-workflow attestation constraints against the published v0.3.1-beta archive before applying the same command shape to v0.3.2-beta guidance.",
     "The installed Skill tree is byte-identical to the previously probed v0.2.0-beta tree, so the content-addressed fresh-agent usability response remains applicable."
   ],
   "agent_response": "agent-response.md",
   "limitations": [
-    "The test used locally built assets from a clean public GitHub branch clone because the v0.3.1-beta tag and draft prerelease did not yet exist.",
+    "The test used locally built assets from the committed feature branch because the v0.3.2-beta tag and draft prerelease did not yet exist.",
     "The POSIX wrapper was exercised in dry-run mode; actual replacement, upgrade, backup, and rollback paths were exercised through the shared Python installer on Windows.",
     "No new fresh-agent probe was executed because the installable Skill tree is byte-identical to the previously probed tree; the prior response is reused explicitly rather than presented as a new run.",
     "Automatic refresh or discovery in the Codex desktop Skill catalog was not exercised.",
     "The representative repository fixture is synthetic and does not replace broader observation across unrelated production repositories.",
-    "GitHub-hosted Windows/Linux comparison, release download, attestation verification, and draft-prerelease review remain tag-time checks."
+    "The exact attestation verification command was exercised against the public v0.3.1-beta archive; v0.3.2-beta attestation generation and verification remain tag-time checks.",
+    "GitHub-hosted Windows/Linux comparison, release download, and draft-prerelease review remain tag-time checks."
   ]
 }

@@ -4,7 +4,7 @@
 
 An engineering Skill for reliable collaboration between humans and AI agents. It audits, establishes, and improves project goals, repository knowledge, rules, verification, and feedback loops, then captures evidence-based retrospective and onboarding knowledge when a project closes.
 
-> Current candidate: `v0.3.1-beta`. This iteration adds evaluation Schema v2, immutable append-only run history, and a safe installer with verification, upgrade, and rollback support. The latest published version remains `v0.2.0-beta`.
+> Current repository version: `v0.3.2-beta`. Publication and download availability are authoritative on [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases); `main` and unpublished candidates may be ahead of the latest public release. This iteration further hardens release-state synchronization, published-asset protection, and installation provenance verification.
 
 ## What it solves
 
@@ -70,18 +70,26 @@ Choose a level from risk, collaboration size, change rate, agent involvement, an
 
 ## Installation
 
-Install a pinned GitHub Release. CI first creates `v0.3.1-beta` as a draft prerelease; until it is reviewed and published, the latest publicly installable release remains [`v0.2.0-beta`](https://github.com/NaCr05/build-engineering-harness-skill/releases/tag/v0.2.0-beta). The commands below show the maintainer acceptance flow for the `v0.3.1-beta` safe installer; public users follow the same flow after publication.
+Choose an explicitly published, pinned version from [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases). The example uses the current repository version; if that tag is not public, download fails instead of falling back to another version. After downloading, verify every release asset's GitHub Artifact Attestation and constrain provenance to this repository, the selected version tag, and the pinned signer workflow. Run the installer only after provenance verification succeeds.
 
 PowerShell:
 
 ```powershell
-$version = "v0.3.1-beta"
+$version = "v0.3.2-beta"
+$repository = "NaCr05/build-engineering-harness-skill"
+$signerWorkflow = "$repository/.github/workflows/validate.yml"
 $assetBase = "build-engineering-harness-$version"
 $assets = Join-Path $env:TEMP "$assetBase-assets"
 New-Item -ItemType Directory -Force -Path $assets | Out-Null
-gh release download $version --repo NaCr05/build-engineering-harness-skill --dir $assets --pattern "$assetBase*" --pattern "install*"
+gh release download $version --repo $repository --dir $assets --pattern "$assetBase*" --pattern "install*"
 
-# Verify the archive, manifest, every package file, and the installers without writing the Skill target.
+# Verify provenance, the version tag, and the signer workflow before executing any downloaded script.
+Get-ChildItem -LiteralPath $assets -File | ForEach-Object {
+    gh attestation verify $_.FullName --repo $repository --source-ref "refs/tags/$version" --signer-workflow $signerWorkflow
+    if ($LASTEXITCODE -ne 0) { throw "Attestation verification failed for $($_.Name)" }
+}
+
+# Then verify the archive, manifest, every package file, and the installers without writing the Skill target.
 & "$assets\install.ps1" -Version $version -AssetDir $assets -DryRun
 # Install after review. An existing version is backed up and restored automatically on failure.
 & "$assets\install.ps1" -Version $version -AssetDir $assets
@@ -90,10 +98,17 @@ gh release download $version --repo NaCr05/build-engineering-harness-skill --dir
 macOS or Linux:
 
 ```bash
-version="v0.3.1-beta"
+set -eu
+version="v0.3.2-beta"
+repository="NaCr05/build-engineering-harness-skill"
+signer_workflow="$repository/.github/workflows/validate.yml"
 asset_base="build-engineering-harness-$version"
 assets="$(mktemp -d)"
-gh release download "$version" --repo NaCr05/build-engineering-harness-skill --dir "$assets" --pattern "$asset_base*" --pattern "install*"
+gh release download "$version" --repo "$repository" --dir "$assets" --pattern "$asset_base*" --pattern "install*"
+
+for asset in "$assets"/*; do
+  gh attestation verify "$asset" --repo "$repository" --source-ref "refs/tags/$version" --signer-workflow "$signer_workflow"
+done
 
 sh "$assets/install.sh" --version "$version" --asset-dir "$assets" --dry-run
 sh "$assets/install.sh" --version "$version" --asset-dir "$assets"
@@ -102,7 +117,7 @@ sh "$assets/install.sh" --version "$version" --asset-dir "$assets"
 For a source installation, clone the version tag rather than moving `main`:
 
 ```bash
-git clone --branch v0.3.1-beta --depth 1 https://github.com/NaCr05/build-engineering-harness-skill.git
+git clone --branch v0.3.2-beta --depth 1 https://github.com/NaCr05/build-engineering-harness-skill.git
 ```
 
 The installer honors `CODEX_HOME` and otherwise uses `.codex` under the user home directory. Upgrades retain a unique backup beside the Skill target and automatically restore it on failure. Start a new Codex task after installing or upgrading so the Skill catalog can refresh.
@@ -188,16 +203,17 @@ skill/build-engineering-harness/
 
 `SKILL.md` is the runtime entry loaded by Codex. `SKILL.zh-CN.md` is a synchronized human-readable Chinese translation. Detailed methods live in `references/`; reusable output templates live in `assets/`.
 
-## `v0.3.1-beta` candidate evidence
+## `v0.3.2-beta` repository evidence
 
 - The isolated L1, L2, and L3 forward tests passed every safety gate with 10/10 quality scores. Sanitized responses and scored results live under [`tests/scenarios/`](tests/scenarios/).
 - Forward-test evidence uses Schema v2 with run and evaluator provenance, explicit unknown reasons, separate input-bundle hashes, and per-dimension scoring rationale. Each run lives under its own `runs/<run-id>/` directory, and CI blocks edits or deletion of committed history.
 - The safe installer verifies the manifest, archive checksum, installer assets, every package file, and the whole Skill tree before replacement. Upgrades retain a backup and failed installs roll back automatically. See [`tests/installation/result.json`](tests/installation/result.json).
-- `v0.3.1-beta` does not change installable Skill behavior and retains the same Skill tree and existing L1, L2, and L3 forward-test responses.
-- GitHub Actions is configured to upload Windows and Linux builds, compare every release asset, validate release evidence, generate Artifact Attestations, and create a draft prerelease automatically.
+- `v0.3.2-beta` does not change installable Skill behavior and retains the same Skill tree and existing L1, L2, and L3 forward-test responses.
+- GitHub Actions is configured to upload Windows and Linux builds, compare every release asset, validate release evidence, generate Artifact Attestations, and create a draft prerelease automatically. Automation may refresh only a draft and must stop when a release with the same tag is already public.
+- Installation verifies Artifact Attestations for all six assets before executing a downloaded installer and binds provenance to the repository, version tag, and signer workflow.
 - Every third-party Action is pinned to a full commit SHA; formal packaging rejects source-commit mismatch, uncommitted package inputs, symbolic links, junctions, and special files.
 
-These are reproducible representative synthetic scenarios, not coverage of every production repository. Until the `v0.3.1-beta` draft prerelease is reviewed and published, it is not a public install target or a stable-release promise.
+These are reproducible representative synthetic scenarios, not coverage of every production repository or a stable-release promise. A version and its evidence in the repository do not mean that version is public; installation availability is always authoritative on [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases).
 
 ## Contributing
 
