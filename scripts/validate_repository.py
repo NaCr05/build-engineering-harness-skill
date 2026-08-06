@@ -199,6 +199,82 @@ def check_public_governance(root: Path, issues: list[Issue]) -> None:
                     f"Required public-governance marker is missing: {marker}",
                 )
 
+    readme_structures = {
+        Path("README.md"): [
+            "## 30 秒开始",
+            "## 你会得到什么",
+            "## 工作方式与安全边界",
+            "## 适用场景与成熟度",
+            "## 安装",
+            "## 常用 Prompt",
+            "## 信任与验证",
+            "## 项目导航",
+            "## 方法论与许可",
+        ],
+        Path("README.en.md"): [
+            "## 30-second start",
+            "## What you get",
+            "## Workflow and safety boundary",
+            "## Use cases and maturity",
+            "## Installation",
+            "## Common prompts",
+            "## Trust and verification",
+            "## Project navigation",
+            "## Methodology and license",
+        ],
+    }
+    for rel, headings in readme_structures.items():
+        path = root / rel
+        if not path.is_file():
+            continue
+        content = read_text(path)
+        positions = [content.find(heading) for heading in headings]
+        if any(position < 0 for position in positions):
+            missing = [
+                heading for heading, position in zip(headings, positions) if position < 0
+            ]
+            add_issue(
+                issues,
+                "error",
+                "README_STRUCTURE",
+                rel,
+                f"Required README section is missing: {', '.join(missing)}",
+            )
+        elif positions != sorted(positions):
+            add_issue(
+                issues,
+                "error",
+                "README_STRUCTURE",
+                rel,
+                "README sections must keep the user-first quick-start, method, installation, evidence, and routing order.",
+            )
+
+    required_readme_routes = [
+        "skill/build-engineering-harness/SKILL.md",
+        "skill/build-engineering-harness/references/repository-knowledge-governance.md",
+        "tests/README.md",
+        "tests/installation/result.json",
+        ".github/workflows/validate.yml",
+        "CHANGELOG.md",
+        "CONTRIBUTING.md",
+        "SECURITY.md",
+        "LICENSE",
+    ]
+    for rel in readme_structures:
+        path = root / rel
+        if not path.is_file():
+            continue
+        content = read_text(path)
+        for route in required_readme_routes:
+            if route not in content:
+                add_issue(
+                    issues,
+                    "error",
+                    "README_ROUTE",
+                    rel,
+                    f"README must route readers to the authoritative repository artifact: {route}",
+                )
+
     volatile_release_markers = {
         Path("README.md"): [
             "当前候选版本：",
