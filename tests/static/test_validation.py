@@ -73,6 +73,34 @@ class RepositoryValidationTests(unittest.TestCase):
         )
         self.assertIn("PUBLIC_GOVERNANCE_DRIFT", self.error_codes(root))
 
+    def test_readme_section_order_is_blocking(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        readme = root / "README.en.md"
+        content = readme.read_text(encoding="utf-8")
+        quick_start = content.index("## 30-second start")
+        what_you_get = content.index("## What you get")
+        reordered = (
+            content[:quick_start]
+            + content[what_you_get:]
+            + "\n"
+            + content[quick_start:what_you_get]
+        )
+        readme.write_text(reordered, encoding="utf-8")
+        self.assertIn("README_STRUCTURE", self.error_codes(root))
+
+    def test_missing_readme_authoritative_route_is_blocking(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        readme = root / "README.md"
+        readme.write_text(
+            readme.read_text(encoding="utf-8").replace(
+                "tests/installation/result.json", "tests/installation/evidence.json"
+            ),
+            encoding="utf-8",
+        )
+        self.assertIn("README_ROUTE", self.error_codes(root))
+
     def test_volatile_publication_status_is_blocking(self) -> None:
         temporary, root = self.make_copy()
         self.addCleanup(temporary.cleanup)

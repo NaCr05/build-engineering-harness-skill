@@ -2,63 +2,55 @@
 
 [中文](README.md)
 
-An engineering Skill for reliable collaboration between humans and AI agents. It audits, establishes, and improves project goals, repository knowledge, rules, verification, and feedback loops, then captures evidence-based retrospective and onboarding knowledge when a project closes.
+[![Validate repository](https://github.com/NaCr05/build-engineering-harness-skill/actions/workflows/validate.yml/badge.svg)](https://github.com/NaCr05/build-engineering-harness-skill/actions/workflows/validate.yml)
+[![Release](https://img.shields.io/github/v/release/NaCr05/build-engineering-harness-skill?include_prereleases&label=release)](https://github.com/NaCr05/build-engineering-harness-skill/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-> Current repository version: `v0.3.2-beta`. Publication and download availability are authoritative on [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases); `main` and unpublished candidates may be ahead of the latest public release. This iteration further hardens release-state synchronization, published-asset protection, and installation provenance verification.
+A Codex engineering Skill that helps humans and AI agents collaborate around clear goals, trustworthy repository knowledge, explicit boundaries, and executable evidence instead of relying on one-off prompts.
 
-## What it solves
+`Read-only assessment → improvement plan → user approval → implementation → automated verification`
 
-Reliable agent work depends on more than model capability. A repository also needs clear goals, trustworthy sources of truth, explicit boundaries, executable workflows, and fast verification.
+> Repository version: `v0.3.2-beta`. [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) is authoritative for publication and download availability; `main` may be ahead of a public release.
 
-Use this Skill to ask:
+## 30-second start
 
-- Are the goal, users, inputs, outputs, and success criteria clear?
-- Are architecture, module boundaries, data flow, and interfaces understandable?
-- Do README files, docs, AGENTS.md, decisions, and current-state artifacts have clear responsibilities?
-- Are there duplicated sources of truth, conflicting rules, or drift-prone explanations?
-- Are human, agent, and automation responsibilities explicit?
-- Do tests, evaluations, logs, and error handling provide evidence of correctness?
-- Which lessons should become durable repository assets?
+After installation, open your project in Codex and send:
 
-## Core capabilities
+```text
+Use $build-engineering-harness to perform a read-only assessment of this repository.
+Review its goals, architecture, repository knowledge, development workflow, verification,
+and feedback loops. Separate observed facts, inferences, risks, and recommendations.
+Do not modify files yet.
+```
 
-- **Engineering harness assessment** based on repository evidence.
-- **Repository knowledge governance** using a functional-role by update-semantics model.
-- **Authority and relationship analysis** across canonical, explanatory, and evidence artifacts.
-- **AI and agent project review** covering prompts, context, tools, memory, output schemas, failure handling, cost, latency, and reliability.
-- **Executable verification loops** that replace subjective confidence with evidence.
-- **Project closeout** with evidence-based retrospective and newcomer onboarding documents.
+The Skill first uses repository evidence to report maturity, prioritized findings, and a staged improvement plan. It changes only the scope you explicitly approve. Not installed yet? Jump to [Installation](#installation).
 
-## Safety contract
+## What you get
 
-Engineering-harness mode uses two strictly separated phases:
+| Your situation | Primary output |
+|---|---|
+| A nearly finished project needs cleanup or open-source preparation | A readiness assessment across goals, architecture, repository knowledge, workflow, verification, and release practices |
+| README files, docs, AGENTS.md, or current-state notes keep drifting | An audit of artifact roles, authority, sources of truth, ownership, and drift risks |
+| AI or agent behavior needs engineering rigor | Checks for prompts, context, tools, memory, output schemas, failure handling, cost, latency, and reliability |
+| You approve an improvement plan | Scope-controlled changes, automated verification evidence, and remaining risks |
+| A project is ready for handoff or closure | An evidence-based retrospective and newcomer onboarding guide |
 
-1. Inspect read-only and propose changes.
-2. Implement only the explicitly approved scope.
+It works for new, legacy, team, and agent-intensive repositories without forcing every project into the same fixed document set.
 
-Project-closeout mode is an explicit exception. When the user directly requests closeout, the Skill may create or update only:
+## Workflow and safety boundary
 
-- `docs/project-retrospective.md`
-- `docs/project-onboarding.md`
+Engineering-harness mode has two strictly separated phases:
 
-An assessment request is never treated as write authorization, and the Skill does not mechanically restructure a repository to match preferred filenames.
+1. **Read-only assessment:** inspect evidence, separate facts from inferences, and propose a reviewable plan without modifying the project.
+2. **Approved implementation:** implement only explicitly approved items, preserve unrelated changes, and report verification results.
 
-## Repository knowledge governance
+Ordinary requests to assess, audit, or explain do not authorize writes. Project closeout is an explicit exception: when the user directly requests `project-closeout`, the Skill may create or update only `docs/project-retrospective.md` and `docs/project-onboarding.md`.
 
-Each knowledge-bearing artifact receives:
+See [`SKILL.md`](skill/build-engineering-harness/SKILL.md) for the runtime rules loaded by Codex and [`SKILL.zh-CN.md`](skill/build-engineering-harness/SKILL.zh-CN.md) for the synchronized Chinese explanation.
 
-- exactly one primary role and zero to two secondary roles;
-- exactly one update semantic;
-- exactly one authority attribute;
-- an owner, update trigger, and verification method.
+## Use cases and maturity
 
-The six functional roles are navigation and routing, rules and boundaries, specifications and contracts, state and evidence, rationale and history, and execution and verification.
-
-The four update semantics are stable entry, synchronized, append-only evolution, and derived or generated.
-
-This is a classification and diagnostic space, not a requirement to create a fixed number of documents.
-
-## Maturity levels
+The Skill scales its recommendations to risk, team size, change rate, agent involvement, and error cost:
 
 | Level | Typical context | Focus |
 |---|---|---|
@@ -66,13 +58,16 @@ This is a classification and diagnostic space, not a requirement to create a fix
 | L2 Managed | Ongoing team collaboration | Central registry, ownership, decision history, and synchronization checks |
 | L3 Agent-intensive | High agent involvement or high-risk systems | Scoped instructions, project Skills, evaluations, generated evidence, and automation |
 
-Choose a level from risk, collaboration size, change rate, agent involvement, and error cost rather than repository size alone.
+Repository knowledge is governed with a **functional-role × update-semantics** model. Every artifact has exactly one primary role, one update semantic, one authority attribute, and explicit ownership, update triggers, and verification. See the [repository knowledge governance reference](skill/build-engineering-harness/references/repository-knowledge-governance.md) for the six roles and four update semantics.
 
 ## Installation
 
-Choose an explicitly published, pinned version from [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases). The example uses the current repository version; if that tag is not public, download fails instead of falling back to another version. After downloading, verify every release asset's GitHub Artifact Attestation and constrain provenance to this repository, the selected version tag, and the pinned signer workflow. Run the installer only after provenance verification succeeds.
+Prerequisites: Python 3, a [GitHub CLI](https://cli.github.com/) version that supports `gh attestation`, and an authenticated `gh auth login`. Choose an explicitly published, pinned version from [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases). The examples use the current repository version.
 
-PowerShell:
+The fixed sequence is: download assets → verify GitHub Artifact Attestations → run the installer's read-only validation → install. Provenance is constrained to this repository, the selected version tag, and the pinned signer workflow.
+
+<details>
+<summary>PowerShell (Windows)</summary>
 
 ```powershell
 $version = "v0.3.2-beta"
@@ -83,19 +78,19 @@ $assets = Join-Path $env:TEMP "$assetBase-assets"
 New-Item -ItemType Directory -Force -Path $assets | Out-Null
 gh release download $version --repo $repository --dir $assets --pattern "$assetBase*" --pattern "install*"
 
-# Verify provenance, the version tag, and the signer workflow before executing any downloaded script.
 Get-ChildItem -LiteralPath $assets -File | ForEach-Object {
     gh attestation verify $_.FullName --repo $repository --source-ref "refs/tags/$version" --signer-workflow $signerWorkflow
     if ($LASTEXITCODE -ne 0) { throw "Attestation verification failed for $($_.Name)" }
 }
 
-# Then verify the archive, manifest, every package file, and the installers without writing the Skill target.
 & "$assets\install.ps1" -Version $version -AssetDir $assets -DryRun
-# Install after review. An existing version is backed up and restored automatically on failure.
 & "$assets\install.ps1" -Version $version -AssetDir $assets
 ```
 
-macOS or Linux:
+</details>
+
+<details>
+<summary>macOS or Linux</summary>
 
 ```bash
 set -eu
@@ -114,44 +109,11 @@ sh "$assets/install.sh" --version "$version" --asset-dir "$assets" --dry-run
 sh "$assets/install.sh" --version "$version" --asset-dir "$assets"
 ```
 
-For a source installation, clone the version tag rather than moving `main`:
+</details>
 
-```bash
-git clone --branch v0.3.2-beta --depth 1 https://github.com/NaCr05/build-engineering-harness-skill.git
-```
+The installer honors `CODEX_HOME` and otherwise uses `.codex` under the user home directory. Upgrades first retain a backup and automatically restore it on failure. Start a new Codex task after installing or upgrading so the Skill catalog can refresh.
 
-The installer honors `CODEX_HOME` and otherwise uses `.codex` under the user home directory. Upgrades retain a unique backup beside the Skill target and automatically restore it on failure. Start a new Codex task after installing or upgrading so the Skill catalog can refresh.
-
-## Validation
-
-The repository provides dependency-free, cross-platform validation:
-
-```text
-python -m unittest discover -s tests/static -v
-python scripts/validate_repository.py
-python scripts/build_release_package.py --output-dir .test-runs/release-package
-```
-
-GitHub Actions runs the same checks on Windows and Linux. Before a release, also run:
-
-```text
-python scripts/validate_repository.py --release
-```
-
-`--release` additionally requires L1, L2, and L3 forward-test evidence plus an isolated installation record. Schema v2 recomputes separate agent-input and evaluator-input bundle hashes and validates model, runner, timing, usage, evaluator, rubric, and per-dimension rationale fields. Historical runs are append-only. See `tests/README.md` for scenario isolation and scoring.
-
-CI uploads the Windows and Linux builds separately, then uses `scripts/compare_release_artifacts.py` to compare the ZIP, checksum, manifest, and three installer assets byte for byte. A version tag attests all six assets and creates a draft prerelease only after cross-platform comparison and release-evidence validation pass. Formal packaging also requires committed `VERSION`, Skill, and installer inputs that match the recorded source commit.
-
-## Quick usage
-
-### Assess an existing repository
-
-```text
-Use $build-engineering-harness to perform a read-only assessment of this repository.
-Review its goals, architecture, repository knowledge, development workflow, verification,
-and feedback loops. Separate observed facts, inferences, risks, and recommendations.
-Do not modify files yet.
-```
+## Common prompts
 
 ### Audit repository knowledge governance
 
@@ -170,7 +132,7 @@ output schemas, failure handling, and evaluation coverage for accuracy, latency,
 and reliability.
 ```
 
-### Implement approved changes
+### Implement approved improvements
 
 ```text
 I approve items 1, 3, and 4 from the previous proposal.
@@ -186,43 +148,41 @@ Create the evidence-based retrospective and onboarding documents without modifyi
 code or any other project files.
 ```
 
-## Repository layout
+## Trust and verification
+
+| Guarantee | Mechanism | Evidence |
+|---|---|---|
+| Skill behavior is evaluable | Isolated L1, L2, and L3 forward tests with common safety gates | [`tests/scenarios/`](tests/scenarios/) and [`tests/README.md`](tests/README.md) |
+| Evaluation runs are traceable | Schema v2 hashes, run and evaluator provenance, scoring rationale, and append-only history | [`tests/scenarios/`](tests/scenarios/) |
+| Installation is verifiable | Manifest, archive and file hashes, backups, and automatic rollback | [`tests/installation/result.json`](tests/installation/result.json) |
+| Cross-platform builds agree | Independent Windows and Linux builds compared byte for byte | [Validation workflow](.github/workflows/validate.yml) |
+| Release provenance is verifiable | GitHub Artifact Attestations for all six release assets | [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) |
+
+Local validation requires no third-party Python package:
 
 ```text
-skill/build-engineering-harness/
-├── SKILL.md
-├── SKILL.zh-CN.md
-├── agents/openai.yaml
-├── references/
-│   ├── personal-ai-engineering-playbook.md
-│   ├── project-closeout-templates.md
-│   └── repository-knowledge-governance.md
-└── assets/
-    └── repository-knowledge-audit-template.md
+python -m unittest discover -s tests/static -v
+python scripts/validate_repository.py
+python scripts/build_release_package.py --output-dir .test-runs/release-package
+python scripts/validate_repository.py --release
 ```
 
-`SKILL.md` is the runtime entry loaded by Codex. `SKILL.zh-CN.md` is a synchronized human-readable Chinese translation. Detailed methods live in `references/`; reusable output templates live in `assets/`.
+This evidence comes from reproducible representative synthetic scenarios. It is not coverage of every production repository or a stable-release promise.
 
-## `v0.3.2-beta` repository evidence
+## Project navigation
 
-- The isolated L1, L2, and L3 forward tests passed every safety gate with 10/10 quality scores. Sanitized responses and scored results live under [`tests/scenarios/`](tests/scenarios/).
-- Forward-test evidence uses Schema v2 with run and evaluator provenance, explicit unknown reasons, separate input-bundle hashes, and per-dimension scoring rationale. Each run lives under its own `runs/<run-id>/` directory, and CI blocks edits or deletion of committed history.
-- The safe installer verifies the manifest, archive checksum, installer assets, every package file, and the whole Skill tree before replacement. Upgrades retain a backup and failed installs roll back automatically. See [`tests/installation/result.json`](tests/installation/result.json).
-- `v0.3.2-beta` does not change installable Skill behavior and retains the same Skill tree and existing L1, L2, and L3 forward-test responses.
-- GitHub Actions is configured to upload Windows and Linux builds, compare every release asset, validate release evidence, generate Artifact Attestations, and create a draft prerelease automatically. Automation may refresh only a draft and must stop when a release with the same tag is already public.
-- Installation verifies Artifact Attestations for all six assets before executing a downloaded installer and binds provenance to the repository, version tag, and signer workflow.
-- Every third-party Action is pinned to a full commit SHA; formal packaging rejects source-commit mismatch, uncommitted package inputs, symbolic links, junctions, and special files.
+| What you need | Authoritative entry |
+|---|---|
+| Runtime behavior and safety boundaries | [`skill/build-engineering-harness/SKILL.md`](skill/build-engineering-harness/SKILL.md) |
+| Personal AI engineering method | [`personal-ai-engineering-playbook.md`](skill/build-engineering-harness/references/personal-ai-engineering-playbook.md) |
+| Repository knowledge governance model | [`repository-knowledge-governance.md`](skill/build-engineering-harness/references/repository-knowledge-governance.md) |
+| Forward tests, isolation, and scoring | [`tests/README.md`](tests/README.md) |
+| Release history | [`CHANGELOG.md`](CHANGELOG.md) |
+| Contribution workflow | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
+| Security reporting | [`SECURITY.md`](SECURITY.md) |
 
-These are reproducible representative synthetic scenarios, not coverage of every production repository or a stable-release promise. A version and its evidence in the repository do not mean that version is public; installation availability is always authoritative on [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases).
+## Methodology and license
 
-## Contributing
-
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes. See [SECURITY.md](SECURITY.md) for security reporting. Release changes are recorded in [CHANGELOG.md](CHANGELOG.md).
-
-## Methodology and inspiration
-
-This project combines a personal AI engineering playbook, agent-friendly repository practices, and evidence-driven verification into an executable Skill. Its overall Harness Engineering direction was inspired by OpenAI's [Harness engineering: leveraging Codex in an agent-first world](https://openai.com/index/harness-engineering/). The repository knowledge governance model is an original generalized synthesis for software projects.
-
-## License
+This project combines a personal AI engineering method, agent-friendly repository practices, and evidence-driven verification into an executable Skill. Its overall direction was inspired by OpenAI's [Harness engineering: leveraging Codex in an agent-first world](https://openai.com/index/harness-engineering/). The repository knowledge governance model is an original generalized synthesis for software projects.
 
 This project is licensed under the [MIT License](LICENSE).
