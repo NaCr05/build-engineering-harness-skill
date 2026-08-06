@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "run_id": "2026-08-06-fb59c60-safe-installer-05",
-  "source_commit": "fb59c60cb74bea092f9baacfc57b049402758c26",
+  "run_id": "2026-08-06-b371541-safe-installer-06",
+  "source_commit": "b37154176f1c71b8e12828c937706be65480ba57",
   "tested_at": "2026-08-06",
   "passed": true,
   "environment": {
@@ -12,8 +12,8 @@
   },
   "artifacts": {
     "archive_sha256": "c9cf2fbfbfe978930fd2020969c7b2fe69d02d1057e6f73eb0f0b6e9dfe8575f",
-    "checksum_sha256": "ffa124e8fd84fa751c393a5e337311453d2dfcc6936db8682b6d9741fc0f78f8",
-    "manifest_sha256": "b0f394690636dbebd590b845453544abf1a49be69a2f72a097421c6dd64246f5",
+    "checksum_sha256": "6d05b7bb3df96be70c842a94ad20b63a8a3c013f5a24e56f9caf5e9fc4011106",
+    "manifest_sha256": "7eec4ecb53c706501cf1d4072852ea56363c97ebe08b6ea42a885620ea50eff4",
     "package_tree_sha256": "b9ab93e9954aa77eeaa12a4470fe5da6772c16b35be22944aee7350b84b8ac7f",
     "installed_tree_sha256": "b9ab93e9954aa77eeaa12a4470fe5da6772c16b35be22944aee7350b84b8ac7f",
     "agent_response_sha256": "fd3d572d9bfc5726a43963efa6329ddd8fa46494065046030e45e51a9fa234c9",
@@ -28,20 +28,20 @@
     "Matched the source package tree, installed tree, and upgrade-backup tree by canonical SHA-256.",
     "Ran the packaged POSIX shell installer in WSL dry-run mode against the same verified release assets.",
     "Verified path-traversal rejection, installer-tamper rejection, and automatic restoration after an injected post-backup failure through repository-native tests.",
-    "Ran all thirty repository-validator, packaging, and installer tests successfully; the Windows symbolic-link creation case was skipped because the host lacks that operating-system privilege.",
+    "Ran all thirty-eight repository-validator, changelog, packaging, and installer tests successfully; the Windows symbolic-link creation case was skipped because the host lacks that operating-system privilege.",
     "Ran dependency-free repository validation with zero errors and zero warnings.",
     "Ran the official Skill quick validator in UTF-8 mode against the repository Skill package successfully.",
-    "Verified the documented repository, tag, and signer-workflow attestation constraints against the published v0.3.1-beta archive before applying the same command shape to v0.3.2-beta guidance.",
+    "Verified the documented repository, tag, and signer-workflow attestation constraints against all six published v0.3.2-beta assets before applying the same command shape to v0.3.3-beta guidance.",
     "The installed Skill tree is byte-identical to the previously probed v0.2.0-beta tree, so the content-addressed fresh-agent usability response remains applicable."
   ],
   "agent_response": "agent-response.md",
   "limitations": [
-    "The test used locally built assets from the committed feature branch because the v0.3.2-beta tag and draft prerelease did not yet exist.",
+    "The test used locally built assets from the committed feature branch because the v0.3.3-beta tag and draft prerelease did not yet exist.",
     "The POSIX wrapper was exercised in dry-run mode; actual replacement, upgrade, backup, and rollback paths were exercised through the shared Python installer on Windows.",
     "No new fresh-agent probe was executed because the installable Skill tree is byte-identical to the previously probed tree; the prior response is reused explicitly rather than presented as a new run.",
     "Automatic refresh or discovery in the Codex desktop Skill catalog was not exercised.",
     "The representative repository fixture is synthetic and does not replace broader observation across unrelated production repositories.",
-    "The exact attestation verification command was exercised against the public v0.3.1-beta archive; v0.3.2-beta attestation generation and verification remain tag-time checks.",
-    "GitHub-hosted Windows/Linux comparison, release download, and draft-prerelease review remain tag-time checks."
+    "The exact attestation verification command was exercised against all six public v0.3.2-beta assets; v0.3.3-beta attestation generation and verification remain tag-time checks.",
+    "GitHub-hosted Python 3.10-3.13, Windows, Ubuntu, macOS, cross-platform artifact comparison, release download, and draft-prerelease review remain CI or tag-time checks."
   ]
 }

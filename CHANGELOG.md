@@ -6,6 +6,25 @@ All notable changes to this project will be documented in this file.
 
 No unreleased changes.
 
+## [0.3.3-beta] - 2026-08-06
+
+### Added
+
+- Pull-request validation now requires release-relevant changes to update `CHANGELOG.md`.
+- Monthly Dependabot version updates keep commit-SHA-pinned GitHub Actions current.
+- Compatibility CI covers Python 3.10 through 3.13 on Ubuntu, the existing Windows path on Python 3.12, and the macOS POSIX installation path on Python 3.12.
+
+### Changed
+
+- Reorganized the Chinese and English READMEs around a 30-second start, user outcomes, compact safety boundaries, collapsible attestation-first installation, durable trust evidence, and authoritative repository routes.
+- Documented the supported Python, PowerShell, shell, and operating-system contract with explicit best-effort boundaries.
+- Cross-platform artifact comparison now also depends on the supported-environment compatibility matrix.
+- Repository maintenance enables automatic deletion of merged head branches and removes the superseded `v0.3.0-beta` draft release.
+
+### Security
+
+- Dependabot security updates and vulnerability alerts are enabled alongside secret scanning and push protection.
+
 ## [0.3.2-beta] - 2026-08-06
 
 ### Changed

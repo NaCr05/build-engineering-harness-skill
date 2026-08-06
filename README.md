@@ -10,7 +10,7 @@
 
 `只读检查 → 改进方案 → 用户批准 → 实施 → 自动验证`
 
-> 仓库版本：`v0.3.2-beta`。版本是否已经公开以及是否可下载，以 [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) 为准；`main` 可能领先于公开版本。
+> 仓库版本：`v0.3.3-beta`。版本是否已经公开以及是否可下载，以 [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) 为准；`main` 可能领先于公开版本。
 
 ## 30 秒开始
 
@@ -61,7 +61,18 @@ Skill 会根据风险、协作人数、变化频率、Agent 参与度和错误�
 
 ## 安装
 
-准备条件：Python 3、支持 `gh attestation` 的 [GitHub CLI](https://cli.github.com/)，以及已完成的 `gh auth login`。请选择 [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) 中已经公开的固定版本；下面以当前仓库版本为例。
+### 支持范围
+
+| 运行面 | 支持契约 | CI 证据 |
+|---|---|---|
+| Python 工具与安装器 | CPython 3.10–3.13 | Ubuntu 覆盖全部版本；Windows 和 macOS 覆盖 3.12 |
+| PowerShell 安装包装器 | Windows 上的 PowerShell 7 | `windows-latest` dry-run |
+| POSIX 安装包装器 | Ubuntu 和 macOS 上的 `sh` | `ubuntu-latest` 与 `macos-latest` dry-run |
+| 操作系统 | 当前 GitHub 托管的 Windows、Ubuntu 和 macOS 运行器 | 每次 PR 和 `main` 推送验证 |
+
+Windows PowerShell 5.1、其他 Unix 发行版和 WSL 属于尽力支持范围，不是当前 CI 保证。发现兼容性问题时请提供具体版本和最小复现。
+
+准备条件：上述受支持范围内的 Python、支持 `gh attestation` 的 [GitHub CLI](https://cli.github.com/)，以及已完成的 `gh auth login`。请选择 [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) 中已经公开的固定版本；下面以当前仓库版本为例。
 
 安装顺序固定为：下载资产 → 验证 GitHub Artifact Attestation → 安装器只读校验 → 安装。来源验证会绑定本仓库、对应版本标签和固定签名工作流。
 
@@ -69,7 +80,7 @@ Skill 会根据风险、协作人数、变化频率、Agent 参与度和错误�
 <summary>PowerShell（Windows）</summary>
 
 ```powershell
-$version = "v0.3.2-beta"
+$version = "v0.3.3-beta"
 $repository = "NaCr05/build-engineering-harness-skill"
 $signerWorkflow = "$repository/.github/workflows/validate.yml"
 $assetBase = "build-engineering-harness-$version"
@@ -93,7 +104,7 @@ Get-ChildItem -LiteralPath $assets -File | ForEach-Object {
 
 ```bash
 set -eu
-version="v0.3.2-beta"
+version="v0.3.3-beta"
 repository="NaCr05/build-engineering-harness-skill"
 signer_workflow="$repository/.github/workflows/validate.yml"
 asset_base="build-engineering-harness-$version"

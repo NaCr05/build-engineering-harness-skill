@@ -31,6 +31,16 @@ When behavior changes, update the canonical artifact first and synchronize every
 
 Do not create new reference files when an existing source of truth can be extended without becoming unclear.
 
+Release-relevant changes under `skill/`, `scripts/`, `tests/`, public governance files, or GitHub workflows must update the `Unreleased` section of `CHANGELOG.md` in the same pull request. CI enforces this relationship with `scripts/check_changelog.py`.
+
+## Supported development environments
+
+- Repository tooling and the Python installer support CPython 3.10 through 3.13.
+- Windows validation uses Python 3.12 and PowerShell 7 on the current GitHub-hosted Windows runner.
+- Ubuntu validates Python 3.10, 3.11, 3.12, and 3.13 plus the POSIX installer wrapper.
+- macOS validates Python 3.12 plus the POSIX installer wrapper.
+- Windows PowerShell 5.1, WSL, and other Unix distributions are best-effort rather than CI-guaranteed.
+
 ## Validation
 
 Run the repository-native checks:

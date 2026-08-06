@@ -15,6 +15,7 @@ body:
     attributes:
       label: Affected version
       options:
+        - v0.3.3-beta
         - v0.3.2-beta
         - v0.3.1-beta
         - v0.3.0-beta

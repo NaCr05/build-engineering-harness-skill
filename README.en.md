@@ -10,7 +10,7 @@ A Codex engineering Skill that helps humans and AI agents collaborate around cle
 
 `Read-only assessment → improvement plan → user approval → implementation → automated verification`
 
-> Repository version: `v0.3.2-beta`. [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) is authoritative for publication and download availability; `main` may be ahead of a public release.
+> Repository version: `v0.3.3-beta`. [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) is authoritative for publication and download availability; `main` may be ahead of a public release.
 
 ## 30-second start
 
@@ -62,7 +62,18 @@ Repository knowledge is governed with a **functional-role × update-semantics** 
 
 ## Installation
 
-Prerequisites: Python 3, a [GitHub CLI](https://cli.github.com/) version that supports `gh attestation`, and an authenticated `gh auth login`. Choose an explicitly published, pinned version from [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases). The examples use the current repository version.
+### Support scope
+
+| Surface | Supported contract | CI evidence |
+|---|---|---|
+| Python tooling and installer | CPython 3.10–3.13 | Every version on Ubuntu; Python 3.12 on Windows and macOS |
+| PowerShell installer wrapper | PowerShell 7 on Windows | `windows-latest` dry-run |
+| POSIX installer wrapper | `sh` on Ubuntu and macOS | `ubuntu-latest` and `macos-latest` dry-run |
+| Operating systems | Current GitHub-hosted Windows, Ubuntu, and macOS runner images | Verified on every pull request and `main` push |
+
+Windows PowerShell 5.1, other Unix distributions, and WSL are best-effort rather than CI-guaranteed. Include exact versions and a minimal reproduction when reporting compatibility issues.
+
+Prerequisites: Python within the supported range, a [GitHub CLI](https://cli.github.com/) version that supports `gh attestation`, and an authenticated `gh auth login`. Choose an explicitly published, pinned version from [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases). The examples use the current repository version.
 
 The fixed sequence is: download assets → verify GitHub Artifact Attestations → run the installer's read-only validation → install. Provenance is constrained to this repository, the selected version tag, and the pinned signer workflow.
 
@@ -70,7 +81,7 @@ The fixed sequence is: download assets → verify GitHub Artifact Attestations �
 <summary>PowerShell (Windows)</summary>
 
 ```powershell
-$version = "v0.3.2-beta"
+$version = "v0.3.3-beta"
 $repository = "NaCr05/build-engineering-harness-skill"
 $signerWorkflow = "$repository/.github/workflows/validate.yml"
 $assetBase = "build-engineering-harness-$version"
@@ -94,7 +105,7 @@ Get-ChildItem -LiteralPath $assets -File | ForEach-Object {
 
 ```bash
 set -eu
-version="v0.3.2-beta"
+version="v0.3.3-beta"
 repository="NaCr05/build-engineering-harness-skill"
 signer_workflow="$repository/.github/workflows/validate.yml"
 asset_base="build-engineering-harness-$version"
