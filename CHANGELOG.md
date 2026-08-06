@@ -6,6 +6,19 @@ All notable changes to this project will be documented in this file.
 
 No unreleased changes.
 
+## [0.3.2-beta] - 2026-08-06
+
+### Changed
+
+- Replaced mutable Draft-versus-Published claims in the public README and security policy with durable links to GitHub Releases as the publication source of truth.
+- Installation guidance now verifies Artifact Attestations for all six downloaded assets before running an installer and constrains provenance to the repository, version tag, and signer workflow.
+- Repository validation now blocks volatile publication-status wording and missing installation-provenance guidance.
+
+### Security
+
+- Release automation may refresh assets only while a release remains a draft and fails rather than overwriting an already published release.
+- Static regression tests enforce the published-release immutability guard and provenance-verification documentation.
+
 ## [0.3.1-beta] - 2026-08-05
 
 ### Added

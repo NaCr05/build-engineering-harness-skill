@@ -2,14 +2,15 @@
 
 ## Supported versions
 
-Only the latest published Beta receives security fixes. Draft release candidates are not supported until they are reviewed and published.
+Only the latest published Beta receives security fixes. [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) is the source of truth for publication status. A version appearing on `main`, in `VERSION`, or in release-preparation documentation does not by itself mean that it is published or supported.
 
-| Version | Supported |
+The current repository version is `0.3.2-beta`; apply the policy below to its actual status on GitHub Releases.
+
+| Release class | Supported |
 |---|---|
-| `0.3.1-beta` (draft candidate) | Not until published |
-| `0.3.0-beta` (superseded draft candidate) | No |
-| `0.2.0-beta` | Yes |
-| `0.1.x-beta` and earlier | No |
+| Latest published Beta | Yes |
+| Draft or otherwise unpublished candidate | No |
+| Older Beta or superseded candidate | No |
 
 ## Reporting a security issue
 

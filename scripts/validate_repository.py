@@ -151,10 +151,23 @@ def check_required_paths(root: Path, issues: list[Issue]) -> None:
 
 def check_public_governance(root: Path, issues: list[Issue]) -> None:
     required_markers = {
+        Path("README.md"): [
+            "https://github.com/NaCr05/build-engineering-harness-skill/releases",
+            "gh attestation verify",
+            "--source-ref",
+            "--signer-workflow",
+        ],
+        Path("README.en.md"): [
+            "https://github.com/NaCr05/build-engineering-harness-skill/releases",
+            "gh attestation verify",
+            "--source-ref",
+            "--signer-workflow",
+        ],
         Path("CHANGELOG.md"): ["## [Unreleased]"],
         Path("SECURITY.md"): [
             "private vulnerability reporting form",
             "/security/advisories/new",
+            "https://github.com/NaCr05/build-engineering-harness-skill/releases",
         ],
         Path(".github/ISSUE_TEMPLATE/config.yml"): [
             "blank_issues_enabled: false",
@@ -184,6 +197,37 @@ def check_public_governance(root: Path, issues: list[Issue]) -> None:
                     "PUBLIC_GOVERNANCE_DRIFT",
                     rel,
                     f"Required public-governance marker is missing: {marker}",
+                )
+
+    volatile_release_markers = {
+        Path("README.md"): [
+            "当前候选版本：",
+            "最新已公开版本仍是",
+            "在 Draft Prerelease 经过人工核对并公开前",
+        ],
+        Path("README.en.md"): [
+            "Current candidate:",
+            "latest published version remains",
+            "draft prerelease is reviewed and published",
+        ],
+        Path("SECURITY.md"): [
+            "(draft candidate)",
+            "Not until published",
+        ],
+    }
+    for rel, markers in volatile_release_markers.items():
+        path = root / rel
+        if not path.is_file():
+            continue
+        content = read_text(path)
+        for marker in markers:
+            if marker in content:
+                add_issue(
+                    issues,
+                    "error",
+                    "VOLATILE_RELEASE_STATE",
+                    rel,
+                    "Mutable Draft-versus-Published state must route to GitHub Releases instead of being copied into repository documentation.",
                 )
 
 
@@ -270,6 +314,23 @@ def check_trusted_release_workflow(root: Path, issues: list[Issue]) -> None:
     for marker, message in required_markers.items():
         if marker not in content:
             add_issue(issues, "error", "TRUSTED_RELEASE_WORKFLOW", rel, message)
+
+    published_release_guard = [
+        '--json isDraft --jq .isDraft',
+        'if [[ "$release_is_draft" != "true" ]]; then',
+        'Refusing to overwrite assets for published release',
+        "exit 1",
+        'gh release upload "$tag" dist/* --clobber',
+    ]
+    guard_positions = [content.find(marker) for marker in published_release_guard]
+    if any(position < 0 for position in guard_positions) or guard_positions != sorted(guard_positions):
+        add_issue(
+            issues,
+            "error",
+            "PUBLISHED_RELEASE_OVERWRITE_GUARD",
+            rel,
+            "Release automation must confirm an existing release is still a draft and stop before any clobber upload when it is public.",
+        )
 
     for line_number, line in enumerate(content.splitlines(), start=1):
         match = re.match(r"^\s*uses:\s*([^@\s]+)@([^\s#]+)", line)
