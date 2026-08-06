@@ -161,6 +161,7 @@ def check_public_governance(root: Path, issues: list[Issue]) -> None:
             "--signer-workflow",
             "CPython 3.10–3.13",
             "PowerShell 7",
+            "维护状态：本项目自 2026-08-06 起暂停主动维护",
         ],
         Path("README.en.md"): [
             "https://github.com/NaCr05/build-engineering-harness-skill/releases",
@@ -169,17 +170,21 @@ def check_public_governance(root: Path, issues: list[Issue]) -> None:
             "--signer-workflow",
             "CPython 3.10–3.13",
             "PowerShell 7",
+            "Maintenance status: active maintenance is paused as of 2026-08-06",
         ],
         Path("CONTRIBUTING.md"): [
             "scripts/check_changelog.py",
             "CPython 3.10 through 3.13",
             "Windows PowerShell 5.1",
+            "Active maintenance is paused as of 2026-08-06",
         ],
         Path("CHANGELOG.md"): ["## [Unreleased]"],
         Path("SECURITY.md"): [
             "private vulnerability reporting form",
             "/security/advisories/new",
             "https://github.com/NaCr05/build-engineering-harness-skill/releases",
+            "No version currently receives a committed security-fix or response-time guarantee",
+            "There is no promised acknowledgement, triage, remediation, release, or disclosure timeline",
         ],
         Path(".github/ISSUE_TEMPLATE/config.yml"): [
             "blank_issues_enabled: false",
@@ -198,6 +203,7 @@ def check_public_governance(root: Path, issues: list[Issue]) -> None:
         Path(".github/dependabot.yml"): [
             "package-ecosystem: github-actions",
             "interval: monthly",
+            "open-pull-requests-limit: 0",
         ],
     }
     for rel, markers in required_markers.items():

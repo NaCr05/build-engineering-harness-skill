@@ -6,6 +6,24 @@ All notable changes to this project will be documented in this file.
 
 No unreleased changes.
 
+## [0.3.4-beta] - 2026-08-06
+
+### Changed
+
+- Marked the project as maintenance-paused with no promised feature, issue-response, security-fix, or release schedule while keeping the latest public Beta available as-is.
+- Paused scheduled Dependabot version-update pull requests with `open-pull-requests-limit: 0` while retaining Dependabot alerts, repository-level security updates, secret scanning, and private vulnerability reporting.
+- Updated the SHA-pinned `actions/checkout` and `actions/setup-python` revisions proposed by Dependabot PR #7 before entering the maintenance pause.
+- Documented that ordinary contributions may remain unreviewed until active maintenance resumes.
+
+### Fixed
+
+- Eliminated the recurring conflict between unattended Dependabot version-update pull requests and the intentionally strict human-maintained Changelog gate without introducing a bot bypass.
+
+### Governance
+
+- Added static regression coverage for the maintenance notice, paused Dependabot configuration, and continued Changelog enforcement for workflow changes.
+- Superseded Dependabot PR #7 and retired the obsolete `agent/v0.3-trusted-release` and `agent/v030-finalize-supply-chain` branches during repository closeout.
+
 ## [0.3.3-beta] - 2026-08-06
 
 ### Added

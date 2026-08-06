@@ -20,6 +20,12 @@ class ChangelogSynchronizationTests(unittest.TestCase):
             ),
         )
 
+    def test_workflow_dependency_change_still_requires_changelog(self) -> None:
+        self.assertEqual(
+            [".github/workflows/validate.yml"],
+            missing_changelog_update([".github/workflows/validate.yml"]),
+        )
+
     def test_changelog_update_satisfies_release_relevant_change(self) -> None:
         self.assertEqual(
             [],
