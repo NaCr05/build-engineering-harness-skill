@@ -85,13 +85,26 @@ class RepositoryValidationTests(unittest.TestCase):
         )
         self.assertIn("PUBLIC_GOVERNANCE_DRIFT", self.error_codes(root))
 
-    def test_missing_dependabot_actions_configuration_is_blocking(self) -> None:
+    def test_dependabot_version_updates_must_remain_paused(self) -> None:
         temporary, root = self.make_copy()
         self.addCleanup(temporary.cleanup)
         dependabot = root / ".github/dependabot.yml"
         dependabot.write_text(
             dependabot.read_text(encoding="utf-8").replace(
-                "package-ecosystem: github-actions", "package-ecosystem: pip"
+                "open-pull-requests-limit: 0", "open-pull-requests-limit: 5"
+            ),
+            encoding="utf-8",
+        )
+        self.assertIn("PUBLIC_GOVERNANCE_DRIFT", self.error_codes(root))
+
+    def test_missing_maintenance_status_is_blocking(self) -> None:
+        temporary, root = self.make_copy()
+        self.addCleanup(temporary.cleanup)
+        readme = root / "README.en.md"
+        readme.write_text(
+            readme.read_text(encoding="utf-8").replace(
+                "Maintenance status: active maintenance is paused as of 2026-08-06",
+                "Maintenance status is unspecified",
             ),
             encoding="utf-8",
         )
@@ -153,8 +166,8 @@ class RepositoryValidationTests(unittest.TestCase):
         workflow = root / ".github/workflows/validate.yml"
         workflow.write_text(
             workflow.read_text(encoding="utf-8").replace(
-                "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
-                "actions/checkout@v6",
+                "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "actions/checkout@v7",
                 1,
             ),
             encoding="utf-8",

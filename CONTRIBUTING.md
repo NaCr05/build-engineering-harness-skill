@@ -2,6 +2,10 @@
 
 Thank you for helping improve Build Engineering Harness.
 
+## Maintenance status
+
+Active maintenance is paused as of 2026-08-06. Issues and pull requests may remain unreviewed until maintenance resumes, and submission does not imply a response or merge timeline. Report suspected vulnerabilities privately through the route in `SECURITY.md`; do not publish exploitable details in an issue or pull request.
+
 ## Contribution principles
 
 - Preserve the two-phase contract: inspect and propose first, implement only after explicit approval.

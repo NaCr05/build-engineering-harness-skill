@@ -2,15 +2,15 @@
 
 ## Supported versions
 
-Only the latest published Beta receives security fixes. [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) is the source of truth for publication status. A version appearing on `main`, in `VERSION`, or in release-preparation documentation does not by itself mean that it is published or supported.
+Active maintenance is paused as of 2026-08-06. No version currently receives a committed security-fix or response-time guarantee. The latest published Beta remains available as-is; [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) is the source of truth for publication and download status.
 
-The current repository version is `0.3.3-beta`; apply the policy below to its actual status on GitHub Releases.
+The current repository version is `0.3.4-beta`. A version appearing on `main`, in `VERSION`, or in release-preparation documentation does not by itself mean that it is published or supported.
 
-| Release class | Supported |
+| Release class | Availability and support |
 |---|---|
-| Latest published Beta | Yes |
-| Draft or otherwise unpublished candidate | No |
-| Older Beta or superseded candidate | No |
+| Latest published Beta | Available as-is; no fix or response SLA |
+| Draft or otherwise unpublished candidate | Not supported |
+| Older Beta or superseded candidate | Not supported |
 
 ## Reporting a security issue
 
@@ -28,4 +28,4 @@ Relevant issues include:
 
 Include a minimal reproduction, affected files or version, expected behavior, observed behavior, and impact. Remove all real credentials and confidential repository data.
 
-The maintainer will make a best effort to acknowledge a complete report within seven calendar days and provide an initial triage update within fourteen calendar days. Fix and disclosure timing depends on severity and available evidence. Coordinate public disclosure with the maintainer so users have a reasonable opportunity to update.
+Private reports remain welcome, but they may remain unacknowledged or unresolved until active maintenance resumes. There is no promised acknowledgement, triage, remediation, release, or disclosure timeline during the maintenance pause. Users who require an actively supported security posture should review and pin the exact release and its attestations before use, or maintain a reviewed fork.

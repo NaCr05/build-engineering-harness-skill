@@ -10,7 +10,9 @@ A Codex engineering Skill that helps humans and AI agents collaborate around cle
 
 `Read-only assessment → improvement plan → user approval → implementation → automated verification`
 
-> Repository version: `v0.3.3-beta`. [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) is authoritative for publication and download availability; `main` may be ahead of a public release.
+> Repository version: `v0.3.4-beta`. [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) is authoritative for publication and download availability; `main` may be ahead of a public release.
+>
+> Maintenance status: active maintenance is paused as of 2026-08-06. The latest public Beta and its attested assets remain available as-is, without a promised feature, issue-response, security-fix, or release schedule. See [`SECURITY.md`](SECURITY.md) for the reporting route and full boundary.
 
 ## 30-second start
 
@@ -81,7 +83,7 @@ The fixed sequence is: download assets → verify GitHub Artifact Attestations �
 <summary>PowerShell (Windows)</summary>
 
 ```powershell
-$version = "v0.3.3-beta"
+$version = "v0.3.4-beta"
 $repository = "NaCr05/build-engineering-harness-skill"
 $signerWorkflow = "$repository/.github/workflows/validate.yml"
 $assetBase = "build-engineering-harness-$version"
@@ -105,7 +107,7 @@ Get-ChildItem -LiteralPath $assets -File | ForEach-Object {
 
 ```bash
 set -eu
-version="v0.3.3-beta"
+version="v0.3.4-beta"
 repository="NaCr05/build-engineering-harness-skill"
 signer_workflow="$repository/.github/workflows/validate.yml"
 asset_base="build-engineering-harness-$version"

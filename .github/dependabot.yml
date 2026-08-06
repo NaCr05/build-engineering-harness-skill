@@ -4,7 +4,9 @@ updates:
     directory: /
     schedule:
       interval: monthly
-    open-pull-requests-limit: 5
+    # Maintenance pause: retain security-update plumbing but create no
+    # scheduled version-update pull requests until active maintenance resumes.
+    open-pull-requests-limit: 0
     groups:
       github-actions:
         patterns:

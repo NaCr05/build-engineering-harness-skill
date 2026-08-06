@@ -10,7 +10,9 @@
 
 `只读检查 → 改进方案 → 用户批准 → 实施 → 自动验证`
 
-> 仓库版本：`v0.3.3-beta`。版本是否已经公开以及是否可下载，以 [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) 为准；`main` 可能领先于公开版本。
+> 仓库版本：`v0.3.4-beta`。版本是否已经公开以及是否可下载，以 [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) 为准；`main` 可能领先于公开版本。
+>
+> 维护状态：本项目自 2026-08-06 起暂停主动维护。当前公开 Beta 及其认证资产继续按现状提供，但暂不承诺功能更新、Issue 处理、安全修复或新版本发布时间。安全报告方式和完整边界见 [`SECURITY.md`](SECURITY.md)。
 
 ## 30 秒开始
 
@@ -80,7 +82,7 @@ Windows PowerShell 5.1、其他 Unix 发行版和 WSL 属于尽力支持范围�
 <summary>PowerShell（Windows）</summary>
 
 ```powershell
-$version = "v0.3.3-beta"
+$version = "v0.3.4-beta"
 $repository = "NaCr05/build-engineering-harness-skill"
 $signerWorkflow = "$repository/.github/workflows/validate.yml"
 $assetBase = "build-engineering-harness-$version"
@@ -104,7 +106,7 @@ Get-ChildItem -LiteralPath $assets -File | ForEach-Object {
 
 ```bash
 set -eu
-version="v0.3.3-beta"
+version="v0.3.4-beta"
 repository="NaCr05/build-engineering-harness-skill"
 signer_workflow="$repository/.github/workflows/validate.yml"
 asset_base="build-engineering-harness-$version"
