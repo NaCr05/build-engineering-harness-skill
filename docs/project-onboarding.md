@@ -1,6 +1,6 @@
 # 项目上手指南：Build Engineering Harness
 
-> 本文面向接手维护仓库的人。使用者的快速安装与 Prompt 示例从 [`README.md`](../README.md) 开始；英文入口是 [`README.en.md`](../README.en.md)。最新公开版本只以 [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) 为准。
+> 本文面向接手维护仓库的人。英文默认入口是 [`README.md`](../README.md)；中文快速安装与 Prompt 示例见 [`README.zh-CN.md`](../README.zh-CN.md)。最新公开版本只以 [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) 为准。
 
 ## 两分钟概览（Two-Minute Overview）
 
@@ -55,8 +55,8 @@ flowchart LR
 
 | 路径 | 主要角色 | 何时阅读或修改 |
 |---|---|---|
-| [`README.md`](../README.md) | 中文公开入口 | 了解定位、安装、Prompt、信任模型和导航；用户体验或公开说明变化时同步 |
-| [`README.en.md`](../README.en.md) | 英文公开入口 | 与中文 README 保持语义同步 |
+| [`README.md`](../README.md) | 英文默认公开入口 | 了解定位、安装、Prompt、信任模型和导航；用户体验或公开说明变化时同步 |
+| [`README.zh-CN.md`](../README.zh-CN.md) | 简体中文公开入口 | 与英文 README 保持语义同步 |
 | [`skill/build-engineering-harness/SKILL.md`](../skill/build-engineering-harness/SKILL.md) | 运行行为权威 | 所有 Skill 行为、触发条件、授权边界和工作流变更首先在这里确定 |
 | [`skill/build-engineering-harness/SKILL.zh-CN.md`](../skill/build-engineering-harness/SKILL.zh-CN.md) | 中文运行说明 | 在英文权威行为变化后同 PR 同步 |
 | [`skill/build-engineering-harness/references/`](../skill/build-engineering-harness/references/) | 稳定方法与详细规则 | 修改 Playbook、知识治理模型或项目收尾模板时使用 |
@@ -111,7 +111,7 @@ cd build-engineering-harness-skill
 python --version
 ```
 
-如果目标是安装 Skill 给 Codex 使用，请严格按 [`README.md` 的安装章节](../README.md#安装)执行：从已经公开的固定版本下载六项资产，先逐项运行 `gh attestation verify`，再运行安装器 dry-run，最后正式安装。不要从未知来源直接执行安装脚本，也不要把 `main` 当成公开版本资产。
+如果目标是安装 Skill 给 Codex 使用，请严格按 [`README.zh-CN.md` 的安装章节](../README.zh-CN.md#安装)执行：从已经公开的固定版本下载六项资产，先逐项运行 `gh attestation verify`，再运行安装器 dry-run，最后正式安装。不要从未知来源直接执行安装脚本，也不要把 `main` 当成公开版本资产。
 
 ### 配置（Configuration）
 
@@ -127,7 +127,7 @@ python --version
 
 ### 运行（Run）
 
-该项目没有需要启动的常驻进程。安装完成后，新建一个 Codex 任务让 Skill 目录重新加载，然后在目标仓库中使用 `$build-engineering-harness`。可从 [`README.md` 的常用 Prompt](../README.md#常用-prompt)复制起点。
+该项目没有需要启动的常驻进程。安装完成后，新建一个 Codex 任务让 Skill 目录重新加载，然后在目标仓库中使用 `$build-engineering-harness`。可从 [`README.zh-CN.md` 的常用 Prompt](../README.zh-CN.md#常用-prompt)复制起点。
 
 维护者若只想检查当前仓库，直接运行下节命令即可；不需要启动服务或安装 Node 依赖。
 

@@ -20,7 +20,7 @@ Active maintenance is paused as of 2026-08-06. Issues and pull requests may rema
 - `skill/build-engineering-harness/SKILL.zh-CN.md` is its synchronized Chinese explanation.
 - Detailed repository governance rules live in `references/repository-knowledge-governance.md`.
 - The audit output structure lives in `assets/repository-knowledge-audit-template.md`.
-- `README.md` is the canonical public project overview; `README.en.md` is its synchronized English version.
+- `README.md` is the canonical English public overview; `README.zh-CN.md` is its synchronized Simplified Chinese version.
 
 When behavior changes, update the canonical artifact first and synchronize every affected explanation in the same pull request.
 
