@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-No unreleased changes.
+### Changed
+
+- Made the English README the default repository landing page and moved the synchronized Simplified Chinese edition to `README.zh-CN.md`.
 
 ## [0.3.4-beta] - 2026-08-06
 

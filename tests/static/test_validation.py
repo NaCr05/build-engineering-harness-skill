@@ -64,7 +64,7 @@ class RepositoryValidationTests(unittest.TestCase):
     def test_missing_installation_attestation_guidance_is_blocking(self) -> None:
         temporary, root = self.make_copy()
         self.addCleanup(temporary.cleanup)
-        readme = root / "README.en.md"
+        readme = root / "README.md"
         readme.write_text(
             readme.read_text(encoding="utf-8").replace(
                 "gh attestation verify", "gh provenance check"
@@ -76,7 +76,7 @@ class RepositoryValidationTests(unittest.TestCase):
     def test_missing_documented_support_scope_is_blocking(self) -> None:
         temporary, root = self.make_copy()
         self.addCleanup(temporary.cleanup)
-        readme = root / "README.en.md"
+        readme = root / "README.md"
         readme.write_text(
             readme.read_text(encoding="utf-8").replace(
                 "CPython 3.10–3.13", "Supported Python versions"
@@ -100,7 +100,7 @@ class RepositoryValidationTests(unittest.TestCase):
     def test_missing_maintenance_status_is_blocking(self) -> None:
         temporary, root = self.make_copy()
         self.addCleanup(temporary.cleanup)
-        readme = root / "README.en.md"
+        readme = root / "README.md"
         readme.write_text(
             readme.read_text(encoding="utf-8").replace(
                 "Maintenance status: active maintenance is paused as of 2026-08-06",
@@ -113,7 +113,7 @@ class RepositoryValidationTests(unittest.TestCase):
     def test_readme_section_order_is_blocking(self) -> None:
         temporary, root = self.make_copy()
         self.addCleanup(temporary.cleanup)
-        readme = root / "README.en.md"
+        readme = root / "README.md"
         content = readme.read_text(encoding="utf-8")
         quick_start = content.index("## 30-second start")
         what_you_get = content.index("## What you get")
@@ -141,7 +141,7 @@ class RepositoryValidationTests(unittest.TestCase):
     def test_volatile_publication_status_is_blocking(self) -> None:
         temporary, root = self.make_copy()
         self.addCleanup(temporary.cleanup)
-        readme = root / "README.en.md"
+        readme = root / "README.md"
         readme.write_text(
             readme.read_text(encoding="utf-8")
             + "\nThe latest published version remains `v0.0.0-beta`.\n",
@@ -152,7 +152,7 @@ class RepositoryValidationTests(unittest.TestCase):
     def test_version_drift_is_blocking(self) -> None:
         temporary, root = self.make_copy()
         self.addCleanup(temporary.cleanup)
-        readme = root / "README.en.md"
+        readme = root / "README.md"
         current = f"v{(root / 'VERSION').read_text(encoding='utf-8').strip()}"
         readme.write_text(
             readme.read_text(encoding="utf-8").replace(current, "v9.9.9"),

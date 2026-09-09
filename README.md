@@ -1,85 +1,86 @@
 # Build Engineering Harness
 
-[English](README.en.md)
+[简体中文](README.zh-CN.md)
 
 [![Validate repository](https://github.com/NaCr05/build-engineering-harness-skill/actions/workflows/validate.yml/badge.svg)](https://github.com/NaCr05/build-engineering-harness-skill/actions/workflows/validate.yml)
 [![Release](https://img.shields.io/github/v/release/NaCr05/build-engineering-harness-skill?include_prereleases&label=release)](https://github.com/NaCr05/build-engineering-harness-skill/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-一个面向 Codex 的软件工程 Skill：让人类与 AI Agent 围绕清晰目标、可信仓库知识、明确边界和可执行证据协作，而不是只靠一次性的 Prompt。
+A Codex engineering Skill that helps humans and AI agents collaborate around clear goals, trustworthy repository knowledge, explicit boundaries, and executable evidence instead of relying on one-off prompts.
 
-`只读检查 → 改进方案 → 用户批准 → 实施 → 自动验证`
+`Read-only assessment → improvement plan → user approval → implementation → automated verification`
 
-> 仓库版本：`v0.3.4-beta`。版本是否已经公开以及是否可下载，以 [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) 为准；`main` 可能领先于公开版本。
+> Repository version: `v0.3.4-beta`. [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) is authoritative for publication and download availability; `main` may be ahead of a public release.
 >
-> 维护状态：本项目自 2026-08-06 起暂停主动维护。当前公开 Beta 及其认证资产继续按现状提供，但暂不承诺功能更新、Issue 处理、安全修复或新版本发布时间。安全报告方式和完整边界见 [`SECURITY.md`](SECURITY.md)。
+> Maintenance status: active maintenance is paused as of 2026-08-06. The latest public Beta and its attested assets remain available as-is, without a promised feature, issue-response, security-fix, or release schedule. See [`SECURITY.md`](SECURITY.md) for the reporting route and full boundary.
 
-## 30 秒开始
+## 30-second start
 
-安装完成后，在 Codex 中打开你的项目，直接发送：
+After installation, open your project in Codex and send:
 
 ```text
-使用 $build-engineering-harness 对这个仓库做一次只读体检。
-请从项目目标、架构、仓库知识、开发流程、验证方式和反馈闭环六个方面检查，
-区分事实、推断、风险和建议。先不要修改文件。
+Use $build-engineering-harness to perform a read-only assessment of this repository.
+Review its goals, architecture, repository knowledge, development workflow, verification,
+and feedback loops. Separate observed facts, inferences, risks, and recommendations.
+Do not modify files yet.
 ```
 
-Skill 会先用仓库证据给出成熟度判断、优先级问题和分批改进方案；只有你明确批准后，它才会修改获批范围。尚未安装？跳到[安装](#安装)。
+The Skill first uses repository evidence to report maturity, prioritized findings, and a staged improvement plan. It changes only the scope you explicitly approve. Not installed yet? Jump to [Installation](#installation).
 
-## 你会得到什么
+## What you get
 
-| 你的场景 | 主要产出 |
+| Your situation | Primary output |
 |---|---|
-| 初步完成的项目需要整理或开源 | 目标、架构、仓库知识、流程、验证与发布准备度体检 |
-| README、docs、AGENTS.md 或当前状态容易漂移 | 工件角色、权威范围、事实来源、维护责任与漂移风险审计 |
-| AI 或 Agent 功能需要工程化 | Prompt、Context、Tool、Memory、输出 Schema、失败处理、成本、延迟与可靠性检查 |
-| 已批准实施改进 | 严格限于批准范围的修改、自动验证证据和剩余风险 |
-| 项目准备交接或结束 | 基于证据的项目复盘和新人上手文档 |
+| A nearly finished project needs cleanup or open-source preparation | A readiness assessment across goals, architecture, repository knowledge, workflow, verification, and release practices |
+| README files, docs, AGENTS.md, or current-state notes keep drifting | An audit of artifact roles, authority, sources of truth, ownership, and drift risks |
+| AI or agent behavior needs engineering rigor | Checks for prompts, context, tools, memory, output schemas, failure handling, cost, latency, and reliability |
+| You approve an improvement plan | Scope-controlled changes, automated verification evidence, and remaining risks |
+| A project is ready for handoff or closure | An evidence-based retrospective and newcomer onboarding guide |
 
-它适用于新项目、遗留项目、团队仓库和 Agent 密集型系统；不会为了套用模板而强迫每个项目创建同一组文件。
+It works for new, legacy, team, and agent-intensive repositories without forcing every project into the same fixed document set.
 
-## 工作方式与安全边界
+## Workflow and safety boundary
 
-工程 Harness 模式分为两个严格阶段：
+Engineering-harness mode has two strictly separated phases:
 
-1. **只读评估**：检查仓库、区分事实与推断、提出可审查方案，不修改项目。
-2. **批准后实施**：只实施用户明确批准的项目，保留无关改动，并报告验证结果。
+1. **Read-only assessment:** inspect evidence, separate facts from inferences, and propose a reviewable plan without modifying the project.
+2. **Approved implementation:** implement only explicitly approved items, preserve unrelated changes, and report verification results.
 
-普通的“评估、审计、解释”请求不构成写入许可。项目收尾是一个显式例外：用户直接要求 `project-closeout` 时，只允许创建或更新 `docs/project-retrospective.md` 和 `docs/project-onboarding.md`。
+Ordinary requests to assess, audit, or explain do not authorize writes. Project closeout is an explicit exception: when the user directly requests `project-closeout`, the Skill may create or update only `docs/project-retrospective.md` and `docs/project-onboarding.md`.
 
-Codex 实际执行的完整规则见 [`SKILL.md`](skill/build-engineering-harness/SKILL.md)，中文同步说明见 [`SKILL.zh-CN.md`](skill/build-engineering-harness/SKILL.zh-CN.md)。
+See [`SKILL.md`](skill/build-engineering-harness/SKILL.md) for the runtime rules loaded by Codex and [`SKILL.zh-CN.md`](skill/build-engineering-harness/SKILL.zh-CN.md) for the synchronized Chinese explanation.
 
-## 适用场景与成熟度
+## Use cases and maturity
 
-Skill 会根据风险、协作人数、变化频率、Agent 参与度和错误成本选择合适强度：
+The Skill scales its recommendations to risk, team size, change rate, agent involvement, and error cost:
 
-| 等级 | 适用情况 | 建设重点 |
+| Level | Typical context | Focus |
 |---|---|---|
-| L1 基础型 | 小型或低风险项目 | 入口、核心规则、必要契约和运行验证 |
-| L2 管理型 | 多人持续协作 | 中央注册表、所有权、决策记录和同步检查 |
-| L3 Agent 密集型 | Agent 高频参与或高风险系统 | 分层指令、项目 Skill、评测、生成证据和自动检查 |
+| L1 Foundation | Small or low-risk projects | Entry points, core rules, necessary contracts, and runnable verification |
+| L2 Managed | Ongoing team collaboration | Central registry, ownership, decision history, and synchronization checks |
+| L3 Agent-intensive | High agent involvement or high-risk systems | Scoped instructions, project Skills, evaluations, generated evidence, and automation |
 
-仓库知识使用“**功能角色 × 更新语义**”模型治理：每个工件有且只有一个主要角色、一种更新语义和一种权威属性，并明确所有者、更新触发条件与验证方式。六类角色和四种更新语义的完整定义见[仓库知识治理参考](skill/build-engineering-harness/references/repository-knowledge-governance.md)。
+Repository knowledge is governed with a **functional-role × update-semantics** model. Every artifact has exactly one primary role, one update semantic, one authority attribute, and explicit ownership, update triggers, and verification. See the [repository knowledge governance reference](skill/build-engineering-harness/references/repository-knowledge-governance.md) for the six roles and four update semantics.
 
-## 安装
+## Installation
 
-### 支持范围
+### Support scope
 
-| 运行面 | 支持契约 | CI 证据 |
+| Surface | Supported contract | CI evidence |
 |---|---|---|
-| Python 工具与安装器 | CPython 3.10–3.13 | Ubuntu 覆盖全部版本；Windows 和 macOS 覆盖 3.12 |
-| PowerShell 安装包装器 | Windows 上的 PowerShell 7 | `windows-latest` dry-run |
-| POSIX 安装包装器 | Ubuntu 和 macOS 上的 `sh` | `ubuntu-latest` 与 `macos-latest` dry-run |
-| 操作系统 | 当前 GitHub 托管的 Windows、Ubuntu 和 macOS 运行器 | 每次 PR 和 `main` 推送验证 |
+| Python tooling and installer | CPython 3.10–3.13 | Every version on Ubuntu; Python 3.12 on Windows and macOS |
+| PowerShell installer wrapper | PowerShell 7 on Windows | `windows-latest` dry-run |
+| POSIX installer wrapper | `sh` on Ubuntu and macOS | `ubuntu-latest` and `macos-latest` dry-run |
+| Operating systems | Current GitHub-hosted Windows, Ubuntu, and macOS runner images | Verified on every pull request and `main` push |
 
-Windows PowerShell 5.1、其他 Unix 发行版和 WSL 属于尽力支持范围，不是当前 CI 保证。发现兼容性问题时请提供具体版本和最小复现。
+Windows PowerShell 5.1, other Unix distributions, and WSL are best-effort rather than CI-guaranteed. Include exact versions and a minimal reproduction when reporting compatibility issues.
 
-准备条件：上述受支持范围内的 Python、支持 `gh attestation` 的 [GitHub CLI](https://cli.github.com/)，以及已完成的 `gh auth login`。请选择 [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) 中已经公开的固定版本；下面以当前仓库版本为例。
+Prerequisites: Python within the supported range, a [GitHub CLI](https://cli.github.com/) version that supports `gh attestation`, and an authenticated `gh auth login`. Choose an explicitly published, pinned version from [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases). The examples use the current repository version.
 
-安装顺序固定为：下载资产 → 验证 GitHub Artifact Attestation → 安装器只读校验 → 安装。来源验证会绑定本仓库、对应版本标签和固定签名工作流。
+The fixed sequence is: download assets → verify GitHub Artifact Attestations → run the installer's read-only validation → install. Provenance is constrained to this repository, the selected version tag, and the pinned signer workflow.
 
 <details>
-<summary>PowerShell（Windows）</summary>
+<summary>PowerShell (Windows)</summary>
 
 ```powershell
 $version = "v0.3.4-beta"
@@ -102,7 +103,7 @@ Get-ChildItem -LiteralPath $assets -File | ForEach-Object {
 </details>
 
 <details>
-<summary>macOS 或 Linux</summary>
+<summary>macOS or Linux</summary>
 
 ```bash
 set -eu
@@ -123,51 +124,54 @@ sh "$assets/install.sh" --version "$version" --asset-dir "$assets"
 
 </details>
 
-安装器遵循 `CODEX_HOME`；未设置时使用用户目录下的 `.codex`。升级会先备份旧版本，失败时自动恢复。安装或升级后请新建一个 Codex 任务，让 Skill 列表重新加载。
+The installer honors `CODEX_HOME` and otherwise uses `.codex` under the user home directory. Upgrades first retain a backup and automatically restore it on failure. Start a new Codex task after installing or upgrading so the Skill catalog can refresh.
 
-## 常用 Prompt
+## Common prompts
 
-### 审计仓库知识治理
-
-```text
-使用 $build-engineering-harness 的仓库知识治理模型审计这个项目，目标成熟度为 L2。
-检查工件角色、更新语义、权威范围、事实来源、验证关系和文档漂移。
-使用正式审计模板输出，等待我批准后再实施。
-```
-
-### 审计 AI 或 Agent 项目
+### Audit repository knowledge governance
 
 ```text
-使用 $build-engineering-harness 审计这个 Agent 项目。
-除常规工程检查外，重点检查 Prompt、Context、Tool、Memory、输出 Schema、
-失败处理，以及 Accuracy、Latency、Cost、Reliability 的评测覆盖。
+Use $build-engineering-harness to audit this repository's knowledge governance at L2 maturity.
+Check artifact roles, update semantics, authority scopes, sources of truth, verification
+relationships, and documentation drift. Wait for approval before implementing changes.
 ```
 
-### 实施已批准的改进
+### Review an AI or agent project
 
 ```text
-我批准上一次方案中的第 1、3、4 项。
-请只实施这些获批内容，保留无关修改，并在完成后报告验证证据和剩余风险。
+Use $build-engineering-harness to assess this agent project.
+In addition to the general engineering review, inspect prompts, context, tools, memory,
+output schemas, failure handling, and evaluation coverage for accuracy, latency, cost,
+and reliability.
 ```
 
-### 项目收尾
+### Implement approved improvements
 
 ```text
-使用 $build-engineering-harness 进入 project-closeout 模式，
-基于仓库证据生成项目复盘和新人上手文档，不修改产品代码或其他项目文件。
+I approve items 1, 3, and 4 from the previous proposal.
+Implement only those items, preserve unrelated changes, and report verification evidence
+and remaining risks when finished.
 ```
 
-## 信任与验证
+### Close a project
 
-| 保证 | 实现方式 | 可核对证据 |
+```text
+Use $build-engineering-harness in project-closeout mode.
+Create the evidence-based retrospective and onboarding documents without modifying product
+code or any other project files.
+```
+
+## Trust and verification
+
+| Guarantee | Mechanism | Evidence |
 |---|---|---|
-| Skill 行为可评估 | 隔离的 L1、L2、L3 前向测试和统一安全门禁 | [`tests/scenarios/`](tests/scenarios/) 与 [`tests/README.md`](tests/README.md) |
-| 评测记录可追溯 | Schema v2 哈希、运行与评审来源、逐项理由、追加式历史 | [`tests/scenarios/`](tests/scenarios/) |
-| 安装过程可校验 | manifest、归档与文件哈希、备份和失败回滚 | [`tests/installation/result.json`](tests/installation/result.json) |
-| 跨平台产物一致 | Windows 与 Linux 独立构建并逐字节比较 | [验证工作流](.github/workflows/validate.yml) |
-| 发布来源可证明 | 六项发布资产生成 GitHub Artifact Attestation | [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) |
+| Skill behavior is evaluable | Isolated L1, L2, and L3 forward tests with common safety gates | [`tests/scenarios/`](tests/scenarios/) and [`tests/README.md`](tests/README.md) |
+| Evaluation runs are traceable | Schema v2 hashes, run and evaluator provenance, scoring rationale, and append-only history | [`tests/scenarios/`](tests/scenarios/) |
+| Installation is verifiable | Manifest, archive and file hashes, backups, and automatic rollback | [`tests/installation/result.json`](tests/installation/result.json) |
+| Cross-platform builds agree | Independent Windows and Linux builds compared byte for byte | [Validation workflow](.github/workflows/validate.yml) |
+| Release provenance is verifiable | GitHub Artifact Attestations for all six release assets | [GitHub Releases](https://github.com/NaCr05/build-engineering-harness-skill/releases) |
 
-本地验证入口不依赖第三方 Python 包：
+Local validation requires no third-party Python package:
 
 ```text
 python -m unittest discover -s tests/static -v
@@ -176,22 +180,22 @@ python scripts/build_release_package.py --output-dir .test-runs/release-package
 python scripts/validate_repository.py --release
 ```
 
-这些证据来自可复现的代表性合成场景，不等同于所有生产仓库的覆盖，也不是稳定版承诺。
+This evidence comes from reproducible representative synthetic scenarios. It is not coverage of every production repository or a stable-release promise.
 
-## 项目导航
+## Project navigation
 
-| 想了解什么 | 权威入口 |
+| What you need | Authoritative entry |
 |---|---|
-| Skill 的实际行为和安全边界 | [`skill/build-engineering-harness/SKILL.md`](skill/build-engineering-harness/SKILL.md) |
-| 个人 AI 工程方法 | [`personal-ai-engineering-playbook.md`](skill/build-engineering-harness/references/personal-ai-engineering-playbook.md) |
-| 仓库知识治理模型 | [`repository-knowledge-governance.md`](skill/build-engineering-harness/references/repository-knowledge-governance.md) |
-| 前向测试、隔离方法和评分规则 | [`tests/README.md`](tests/README.md) |
-| 版本变化 | [`CHANGELOG.md`](CHANGELOG.md) |
-| 贡献方式 | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
-| 安全问题报告 | [`SECURITY.md`](SECURITY.md) |
+| Runtime behavior and safety boundaries | [`skill/build-engineering-harness/SKILL.md`](skill/build-engineering-harness/SKILL.md) |
+| Personal AI engineering method | [`personal-ai-engineering-playbook.md`](skill/build-engineering-harness/references/personal-ai-engineering-playbook.md) |
+| Repository knowledge governance model | [`repository-knowledge-governance.md`](skill/build-engineering-harness/references/repository-knowledge-governance.md) |
+| Forward tests, isolation, and scoring | [`tests/README.md`](tests/README.md) |
+| Release history | [`CHANGELOG.md`](CHANGELOG.md) |
+| Contribution workflow | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
+| Security reporting | [`SECURITY.md`](SECURITY.md) |
 
-## 方法论与许可
+## Methodology and license
 
-本项目将个人 AI 工程方法、Agent 友好的仓库实践和证据驱动验证整合为可执行 Skill。整体方向受到 OpenAI 文章 [Harness engineering: leveraging Codex in an agent-first world](https://openai.com/index/harness-engineering/) 的启发；仓库知识治理模型是面向通用软件项目重新抽象的原创综合方法。
+This project combines a personal AI engineering method, agent-friendly repository practices, and evidence-driven verification into an executable Skill. Its overall direction was inspired by OpenAI's [Harness engineering: leveraging Codex in an agent-first world](https://openai.com/index/harness-engineering/). The repository knowledge governance model is an original generalized synthesis for software projects.
 
-本项目采用 [MIT License](LICENSE)。
+This project is licensed under the [MIT License](LICENSE).

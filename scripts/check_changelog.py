@@ -16,7 +16,7 @@ RELEASE_RELEVANT_EXACT = {
     ".github/pull_request_template.md",
     "CONTRIBUTING.md",
     "LICENSE",
-    "README.en.md",
+    "README.zh-CN.md",
     "README.md",
     "SECURITY.md",
     "VERSION",

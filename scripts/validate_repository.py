@@ -38,7 +38,7 @@ REQUIRED_ROOT_PATHS = {
     Path("CHANGELOG.md"),
     Path("CONTRIBUTING.md"),
     Path("LICENSE"),
-    Path("README.en.md"),
+    Path("README.zh-CN.md"),
     Path("README.md"),
     Path("SECURITY.md"),
     Path("VERSION"),
@@ -154,7 +154,7 @@ def check_required_paths(root: Path, issues: list[Issue]) -> None:
 
 def check_public_governance(root: Path, issues: list[Issue]) -> None:
     required_markers = {
-        Path("README.md"): [
+        Path("README.zh-CN.md"): [
             "https://github.com/NaCr05/build-engineering-harness-skill/releases",
             "gh attestation verify",
             "--source-ref",
@@ -163,7 +163,7 @@ def check_public_governance(root: Path, issues: list[Issue]) -> None:
             "PowerShell 7",
             "维护状态：本项目自 2026-08-06 起暂停主动维护",
         ],
-        Path("README.en.md"): [
+        Path("README.md"): [
             "https://github.com/NaCr05/build-engineering-harness-skill/releases",
             "gh attestation verify",
             "--source-ref",
@@ -222,7 +222,7 @@ def check_public_governance(root: Path, issues: list[Issue]) -> None:
                 )
 
     readme_structures = {
-        Path("README.md"): [
+        Path("README.zh-CN.md"): [
             "## 30 秒开始",
             "## 你会得到什么",
             "## 工作方式与安全边界",
@@ -233,7 +233,7 @@ def check_public_governance(root: Path, issues: list[Issue]) -> None:
             "## 项目导航",
             "## 方法论与许可",
         ],
-        Path("README.en.md"): [
+        Path("README.md"): [
             "## 30-second start",
             "## What you get",
             "## Workflow and safety boundary",
@@ -298,12 +298,12 @@ def check_public_governance(root: Path, issues: list[Issue]) -> None:
                 )
 
     volatile_release_markers = {
-        Path("README.md"): [
+        Path("README.zh-CN.md"): [
             "当前候选版本：",
             "最新已公开版本仍是",
             "在 Draft Prerelease 经过人工核对并公开前",
         ],
-        Path("README.en.md"): [
+        Path("README.md"): [
             "Current candidate:",
             "latest published version remains",
             "draft prerelease is reviewed and published",
@@ -346,7 +346,7 @@ def check_version_consistency(root: Path, issues: list[Issue]) -> None:
 
     required_markers = {
         Path("README.md"): f"v{version}",
-        Path("README.en.md"): f"v{version}",
+        Path("README.zh-CN.md"): f"v{version}",
         Path("CHANGELOG.md"): f"## [{version}]",
         Path("SECURITY.md"): f"`{version}`",
         Path(".github/ISSUE_TEMPLATE/bug-report.yml"): f"v{version}",
@@ -1315,8 +1315,8 @@ def check_release_evidence(root: Path, issues: list[Issue]) -> None:
             check_installation_provenance(root, result, installation_rel, issues)
 
     pending_phrases = {
-        "README.md": ["独立真实场景测试和全新环境安装测试仍待完成", "本发布候选尚未完成"],
-        "README.en.md": ["real-world scenario tests and a clean-environment installation test are still pending", "This candidate has not yet completed"],
+        "README.zh-CN.md": ["独立真实场景测试和全新环境安装测试仍待完成", "本发布候选尚未完成"],
+        "README.md": ["real-world scenario tests and a clean-environment installation test are still pending", "This candidate has not yet completed"],
         "CHANGELOG.md": ["Pending before `v0.1.0-beta`"],
     }
     for filename, phrases in pending_phrases.items():
