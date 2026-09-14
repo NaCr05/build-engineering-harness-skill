@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Engineering Harness · Inputs and outcomes",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "animation": "none",
+    "viewBox": [
+      1160,
+      660
+    ],
+    "repository": {
+      "url": "https://github.com/NaCr05/build-engineering-harness-skill",
+      "provider": "github",
+      "revision": "c186f5e26435f543056ded4e8db3797c29d009e1"
+    },
+    "legend": {
+      "mode": "hidden"
+    }
+  },
+  "components": [
+    {
+      "id": "repository",
+      "type": "database",
+      "label": "Your repository",
+      "sublabel": "Code · docs · tests · history",
+      "pos": [
+        50,
+        110
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "sources": [
+        {
+          "path": "skill/build-engineering-harness/SKILL.md",
+          "line": 41
+        }
+      ]
+    },
+    {
+      "id": "method",
+      "type": "database",
+      "label": "Method and templates",
+      "sublabel": "Playbook · governance · audit",
+      "pos": [
+        50,
+        450
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "sources": [
+        {
+          "path": "skill/build-engineering-harness/references/personal-ai-engineering-playbook.md"
+        },
+        {
+          "path": "skill/build-engineering-harness/references/repository-knowledge-governance.md"
+        },
+        {
+          "path": "skill/build-engineering-harness/assets/repository-knowledge-audit-template.md"
+        }
+      ]
+    },
+    {
+      "id": "skill",
+      "type": "backend",
+      "label": "Codex + SKILL.md",
+      "sublabel": "Evidence-led engineering guidance",
+      "pos": [
+        440,
+        280
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "sources": [
+        {
+          "path": "skill/build-engineering-harness/SKILL.md",
+          "line": 29
+        }
+      ]
+    },
+    {
+      "id": "proposal",
+      "type": "frontend",
+      "label": "Read-only proposal",
+      "sublabel": "Findings · priorities · exact scope",
+      "pos": [
+        860,
+        70
+      ],
+      "size": [
+        260,
+        100
+      ],
+      "sources": [
+        {
+          "path": "skill/build-engineering-harness/SKILL.md",
+          "line": 70
+        }
+      ]
+    },
+    {
+      "id": "changes",
+      "type": "frontend",
+      "label": "Approved improvements",
+      "sublabel": "Docs · rules · checks · evidence",
+      "pos": [
+        860,
+        280
+      ],
+      "size": [
+        260,
+        100
+      ],
+      "sources": [
+        {
+          "path": "skill/build-engineering-harness/SKILL.md",
+          "line": 84
+        }
+      ]
+    },
+    {
+      "id": "closeout",
+      "type": "frontend",
+      "label": "Project closeout",
+      "sublabel": "Retrospective + onboarding only",
+      "pos": [
+        860,
+        490
+      ],
+      "size": [
+        260,
+        100
+      ],
+      "sources": [
+        {
+          "path": "skill/build-engineering-harness/SKILL.md",
+          "line": 17
+        },
+        {
+          "path": "skill/build-engineering-harness/references/project-closeout-templates.md"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "repository-to-skill",
+      "from": "repository",
+      "to": "skill",
+      "label": "Inspect evidence"
+    },
+    {
+      "id": "method-to-skill",
+      "from": "method",
+      "to": "skill",
+      "label": "Apply guidance"
+    },
+    {
+      "id": "skill-to-proposal",
+      "from": "skill",
+      "to": "proposal",
+      "label": "Assessment",
+      "fromSide": "top",
+      "toSide": "left",
+      "via": [
+        [
+          565,
+          120
+        ]
+      ]
+    },
+    {
+      "id": "skill-to-changes",
+      "from": "skill",
+      "to": "changes",
+      "label": "User-approved scope"
+    },
+    {
+      "id": "skill-to-closeout",
+      "from": "skill",
+      "to": "closeout",
+      "label": "Explicit closeout request"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Instructions guide the agent",
+      "items": [
+        "SKILL.md owns behavior; the diagrams explain its contract.",
+        "Python scripts package and validate this Skill repository."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Scope follows the project",
+      "items": [
+        "L1 / L2 / L3 reflect risk and coordination needs.",
+        "Closeout writes two docs; other improvements require approval."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,175 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Engineering Harness · 批准与验证",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "animation": "none",
+    "legend": {
+      "mode": "hidden"
+    }
+  },
+  "lanes": [
+    {
+      "id": "assessment",
+      "label": "阶段一 · 只读评估"
+    },
+    {
+      "id": "human",
+      "label": "用户决策"
+    },
+    {
+      "id": "implementation",
+      "label": "阶段二 · 获批实施"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "inspect",
+      "lane": "assessment",
+      "col": 0,
+      "type": "database",
+      "label": "检查仓库",
+      "sublabel": "证据 + L1 / L2 / L3",
+      "width": 180,
+      "height": 80
+    },
+    {
+      "id": "plan",
+      "lane": "assessment",
+      "col": 1,
+      "type": "backend",
+      "label": "提出具体方案",
+      "sublabel": "文件 · 优先级 · 验证方式",
+      "width": 180,
+      "height": 80
+    },
+    {
+      "id": "approve",
+      "lane": "human",
+      "col": 1,
+      "type": "security",
+      "label": "用户批准范围",
+      "sublabel": "需要明确批准",
+      "width": 180,
+      "height": 80
+    },
+    {
+      "id": "hold",
+      "lane": "human",
+      "col": 2,
+      "type": "security",
+      "label": "等待或调整方案",
+      "sublabel": "未批准：不写入项目",
+      "width": 180,
+      "height": 80
+    },
+    {
+      "id": "apply",
+      "lane": "implementation",
+      "col": 1,
+      "type": "backend",
+      "label": "实施获批条目",
+      "sublabel": "保留无关修改",
+      "width": 180,
+      "height": 80
+    },
+    {
+      "id": "verify",
+      "lane": "implementation",
+      "col": 2,
+      "type": "backend",
+      "label": "执行相关检查",
+      "sublabel": "测试 · 构建 · 评测",
+      "width": 180,
+      "height": 80
+    },
+    {
+      "id": "record",
+      "lane": "implementation",
+      "col": 3,
+      "type": "frontend",
+      "label": "报告验证证据",
+      "sublabel": "结果 · 局限 · 下一步",
+      "width": 180,
+      "height": 80
+    }
+  ],
+  "mainPath": [
+    "inspect",
+    "plan",
+    "approve",
+    "apply",
+    "verify",
+    "record"
+  ],
+  "edges": [
+    {
+      "from": "inspect",
+      "to": "plan",
+      "label": "检查发现"
+    },
+    {
+      "from": "plan",
+      "to": "approve",
+      "label": "审阅方案"
+    },
+    {
+      "from": "approve",
+      "to": "apply",
+      "label": "仅获批条目",
+      "variant": "emphasis"
+    },
+    {
+      "from": "approve",
+      "to": "hold",
+      "label": "尚未批准",
+      "role": "branch",
+      "variant": "security"
+    },
+    {
+      "from": "apply",
+      "to": "verify",
+      "label": "已修改范围"
+    },
+    {
+      "from": "verify",
+      "to": "record",
+      "label": "实际结果"
+    }
+  ],
+  "semanticChecks": {
+    "allowedRoots": [
+      "inspect"
+    ],
+    "allowedTerminals": [
+      "hold",
+      "record"
+    ],
+    "requiredPaths": [
+      {
+        "from": "approve",
+        "to": "record"
+      }
+    ]
+  },
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "如实报告验证状态",
+      "items": [
+        "区分通过、失败与未执行的检查。",
+        "方案和图稿本身不等于执行证据。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "收尾使用独立模式",
+      "items": [
+        "明确收尾请求授权两份指定文档。",
+        "本图描述 engineering-harness 模式。"
+      ]
+    }
+  ]
+}

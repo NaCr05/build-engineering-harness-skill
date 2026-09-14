@@ -1,0 +1,175 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Engineering Harness · Approval and verification",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "animation": "none",
+    "legend": {
+      "mode": "hidden"
+    }
+  },
+  "lanes": [
+    {
+      "id": "assessment",
+      "label": "Phase 1 · Read-only"
+    },
+    {
+      "id": "human",
+      "label": "Human decision"
+    },
+    {
+      "id": "implementation",
+      "label": "Phase 2 · Approved work"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "inspect",
+      "lane": "assessment",
+      "col": 0,
+      "type": "database",
+      "label": "Inspect repository",
+      "sublabel": "Evidence + L1 / L2 / L3",
+      "width": 180,
+      "height": 80
+    },
+    {
+      "id": "plan",
+      "lane": "assessment",
+      "col": 1,
+      "type": "backend",
+      "label": "Propose a scoped plan",
+      "sublabel": "Files · priorities · checks",
+      "width": 180,
+      "height": 80
+    },
+    {
+      "id": "approve",
+      "lane": "human",
+      "col": 1,
+      "type": "security",
+      "label": "User selects scope",
+      "sublabel": "Explicit approval required",
+      "width": 180,
+      "height": 80
+    },
+    {
+      "id": "hold",
+      "lane": "human",
+      "col": 2,
+      "type": "security",
+      "label": "Wait or revise",
+      "sublabel": "No approval: no writes",
+      "width": 180,
+      "height": 80
+    },
+    {
+      "id": "apply",
+      "lane": "implementation",
+      "col": 1,
+      "type": "backend",
+      "label": "Apply approved changes",
+      "sublabel": "Preserve unrelated work",
+      "width": 180,
+      "height": 80
+    },
+    {
+      "id": "verify",
+      "lane": "implementation",
+      "col": 2,
+      "type": "backend",
+      "label": "Run relevant checks",
+      "sublabel": "Tests · build · evaluations",
+      "width": 180,
+      "height": 80
+    },
+    {
+      "id": "record",
+      "lane": "implementation",
+      "col": 3,
+      "type": "frontend",
+      "label": "Report evidence",
+      "sublabel": "Results · limits · next step",
+      "width": 180,
+      "height": 80
+    }
+  ],
+  "mainPath": [
+    "inspect",
+    "plan",
+    "approve",
+    "apply",
+    "verify",
+    "record"
+  ],
+  "edges": [
+    {
+      "from": "inspect",
+      "to": "plan",
+      "label": "Findings"
+    },
+    {
+      "from": "plan",
+      "to": "approve",
+      "label": "Review proposal"
+    },
+    {
+      "from": "approve",
+      "to": "apply",
+      "label": "Approved items only",
+      "variant": "emphasis"
+    },
+    {
+      "from": "approve",
+      "to": "hold",
+      "label": "Not approved",
+      "role": "branch",
+      "variant": "security"
+    },
+    {
+      "from": "apply",
+      "to": "verify",
+      "label": "Changed scope"
+    },
+    {
+      "from": "verify",
+      "to": "record",
+      "label": "Actual outcomes"
+    }
+  ],
+  "semanticChecks": {
+    "allowedRoots": [
+      "inspect"
+    ],
+    "allowedTerminals": [
+      "hold",
+      "record"
+    ],
+    "requiredPaths": [
+      {
+        "from": "approve",
+        "to": "record"
+      }
+    ]
+  },
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Verification is reported honestly",
+      "items": [
+        "Distinguish passed, failed and unrun checks.",
+        "A plan or diagram is not execution evidence."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Closeout is a separate mode",
+      "items": [
+        "An explicit closeout request authorizes two named documents.",
+        "This flow describes engineering-harness mode."
+      ]
+    }
+  ]
+}

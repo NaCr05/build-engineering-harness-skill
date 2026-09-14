@@ -1,6 +1,6 @@
 # Build Engineering Harness
 
-[English](README.md)
+[English](README.md) | **简体中文**
 
 [![Validate repository](https://github.com/NaCr05/build-engineering-harness-skill/actions/workflows/validate.yml/badge.svg)](https://github.com/NaCr05/build-engineering-harness-skill/actions/workflows/validate.yml)
 [![Release](https://img.shields.io/github/v/release/NaCr05/build-engineering-harness-skill?include_prereleases&label=release)](https://github.com/NaCr05/build-engineering-harness-skill/releases)
@@ -38,7 +38,27 @@ Skill 会先用仓库证据给出成熟度判断、优先级问题和分批改�
 
 它适用于新项目、遗留项目、团队仓库和 Agent 密集型系统；不会为了套用模板而强迫每个项目创建同一组文件。
 
+## Skill 如何作用于你的项目
+
+工程 Harness 是让项目工作可重复执行的一组目标、仓库知识、规则、工具与检查。Codex 按照本 Skill 的指令检查项目证据，并使用随附的方法与模板形成建议。
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/overview.zh-CN.dark.png">
+  <img src="docs/assets/overview.zh-CN.png" alt="项目证据与方法输入 Codex，产出只读方案、获批改进，或两份收尾文档。">
+</picture>
+
+[查看完整尺寸图示](docs/assets/overview.zh-CN.png)
+
+`SKILL.md` 定义 Agent 行为；本仓库的 Python 脚本负责 Skill 的打包、安装与验证。图中三类产出对应不同工作范围。
+
 ## 工作方式与安全边界
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/approval.zh-CN.dark.png">
+  <img src="docs/assets/approval.zh-CN.png" alt="只读检查与方案经过用户批准后，才能实施、验证并报告证据；未批准则等待或调整方案。">
+</picture>
+
+[查看完整尺寸图示](docs/assets/approval.zh-CN.png)
 
 工程 Harness 模式分为两个严格阶段：
 
@@ -59,7 +79,21 @@ Skill 会根据风险、协作人数、变化频率、Agent 参与度和错误�
 | L2 管理型 | 多人持续协作 | 中央注册表、所有权、决策记录和同步检查 |
 | L3 Agent 密集型 | Agent 高频参与或高风险系统 | 分层指令、项目 Skill、评测、生成证据和自动检查 |
 
+这些等级用于选择适当的工程强度，不是必须依次升级的项目阶段；小项目无需追求 L3。
+
 仓库知识使用“**功能角色 × 更新语义**”模型治理：每个工件有且只有一个主要角色、一种更新语义和一种权威属性，并明确所有者、更新触发条件与验证方式。六类角色和四种更新语义的完整定义见[仓库知识治理参考](skill/build-engineering-harness/references/repository-knowledge-governance.md)。
+
+## 一个具体的审计示例
+
+仓库已有的[历史 L2 合成场景](tests/scenarios/l2-team-project/runs/2026-08-05-ca5f1a8-l2-01/response.md)展示了 Skill 如何区分文档声明与代码证据：
+
+| 仓库声明 | 发现的证据 | 提出的改进 |
+|---|---|---|
+| API 文档使用 `active` / `inactive` | 契约代码及测试使用 `enabled` / `disabled` | 明确权威来源，消除冲突并同步文档 |
+| 文档宣称有端口与 `/health` 端点 | 入口脚本没有启动 HTTP 服务 | 先纠正运行说明，再声明 API 可用 |
+| 测试通过可能被理解为已经就绪 | 该测试只覆盖状态判断函数 | 说明覆盖边界，补充相关验证方案 |
+
+这是 2026-08-05 留存的评估记录，不是本轮新执行的测试，也不证明其中建议已经实施。
 
 ## 安装
 
