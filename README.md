@@ -1,6 +1,6 @@
 # Build Engineering Harness
 
-[简体中文](README.zh-CN.md)
+**English** | [简体中文](README.zh-CN.md)
 
 [![Validate repository](https://github.com/NaCr05/build-engineering-harness-skill/actions/workflows/validate.yml/badge.svg)](https://github.com/NaCr05/build-engineering-harness-skill/actions/workflows/validate.yml)
 [![Release](https://img.shields.io/github/v/release/NaCr05/build-engineering-harness-skill?include_prereleases&label=release)](https://github.com/NaCr05/build-engineering-harness-skill/releases)
@@ -39,7 +39,27 @@ The Skill first uses repository evidence to report maturity, prioritized finding
 
 It works for new, legacy, team, and agent-intensive repositories without forcing every project into the same fixed document set.
 
+## How the Skill fits your project
+
+An engineering harness is the set of goals, repository knowledge, rules, tools, and checks that makes project work repeatable. Codex follows this Skill’s instructions, using your repository as evidence and the bundled references as guidance.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/overview.en.dark.png">
+  <img src="docs/assets/overview.en.png" alt="Repository evidence and guidance feed Codex, producing a read-only proposal, approved improvements, or two closeout documents.">
+</picture>
+
+[View full-size diagram](docs/assets/overview.en.png)
+
+`SKILL.md` defines agent behavior; the Python scripts in this repository package, install, and validate the Skill. The three outputs above represent different scopes of work.
+
 ## Workflow and safety boundary
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/approval.en.dark.png">
+  <img src="docs/assets/approval.en.png" alt="Read-only inspection and proposal lead to user approval, then scoped implementation, checks, and evidence. Without approval, wait or revise.">
+</picture>
+
+[View full-size diagram](docs/assets/approval.en.png)
 
 Engineering-harness mode has two strictly separated phases:
 
@@ -60,7 +80,21 @@ The Skill scales its recommendations to risk, team size, change rate, agent invo
 | L2 Managed | Ongoing team collaboration | Central registry, ownership, decision history, and synchronization checks |
 | L3 Agent-intensive | High agent involvement or high-risk systems | Scoped instructions, project Skills, evaluations, generated evidence, and automation |
 
+These are proportionality levels, not sequential project stages; a small project need not progress to L3.
+
 Repository knowledge is governed with a **functional-role × update-semantics** model. Every artifact has exactly one primary role, one update semantic, one authority attribute, and explicit ownership, update triggers, and verification. See the [repository knowledge governance reference](skill/build-engineering-harness/references/repository-knowledge-governance.md) for the six roles and four update semantics.
+
+## A concrete audit example
+
+The historical [L2 synthetic scenario](tests/scenarios/l2-team-project/runs/2026-08-05-ca5f1a8-l2-01/response.md) shows how the Skill separates documentation claims from code evidence:
+
+| Repository claim | Evidence found | Proposed response |
+|---|---|---|
+| API docs describe `active` / `inactive` | Contract code and its test use `enabled` / `disabled` | Resolve the authority conflict and synchronize the docs |
+| Docs advertise a port and `/health` endpoint | The entry script starts no HTTP server | Correct the run instructions before claiming a working API |
+| A passing test suggests readiness | The test covers only a status predicate | Document the coverage limit and propose relevant checks |
+
+This is a recorded assessment from 2026-08-05, not a new run or evidence that its proposed fixes were implemented.
 
 ## Installation
 

@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Engineering Harness · 输入与产出",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "animation": "none",
+    "viewBox": [
+      1160,
+      660
+    ],
+    "repository": {
+      "url": "https://github.com/NaCr05/build-engineering-harness-skill",
+      "provider": "github",
+      "revision": "c186f5e26435f543056ded4e8db3797c29d009e1"
+    },
+    "legend": {
+      "mode": "hidden"
+    }
+  },
+  "components": [
+    {
+      "id": "repository",
+      "type": "database",
+      "label": "你的项目仓库",
+      "sublabel": "代码 · 文档 · 测试 · 历史",
+      "pos": [
+        50,
+        110
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "sources": [
+        {
+          "path": "skill/build-engineering-harness/SKILL.md",
+          "line": 41
+        }
+      ]
+    },
+    {
+      "id": "method",
+      "type": "database",
+      "label": "方法与模板",
+      "sublabel": "工程方法 · 知识治理 · 审计模板",
+      "pos": [
+        50,
+        450
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "sources": [
+        {
+          "path": "skill/build-engineering-harness/references/personal-ai-engineering-playbook.md"
+        },
+        {
+          "path": "skill/build-engineering-harness/references/repository-knowledge-governance.md"
+        },
+        {
+          "path": "skill/build-engineering-harness/assets/repository-knowledge-audit-template.md"
+        }
+      ]
+    },
+    {
+      "id": "skill",
+      "type": "backend",
+      "label": "Codex + SKILL.md",
+      "sublabel": "依据证据执行工程指引",
+      "pos": [
+        440,
+        280
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "sources": [
+        {
+          "path": "skill/build-engineering-harness/SKILL.md",
+          "line": 29
+        }
+      ]
+    },
+    {
+      "id": "proposal",
+      "type": "frontend",
+      "label": "只读评估方案",
+      "sublabel": "发现 · 优先级 · 明确修改范围",
+      "pos": [
+        860,
+        70
+      ],
+      "size": [
+        260,
+        100
+      ],
+      "sources": [
+        {
+          "path": "skill/build-engineering-harness/SKILL.md",
+          "line": 70
+        }
+      ]
+    },
+    {
+      "id": "changes",
+      "type": "frontend",
+      "label": "获批的工程改进",
+      "sublabel": "文档 · 规则 · 检查 · 验证证据",
+      "pos": [
+        860,
+        280
+      ],
+      "size": [
+        260,
+        100
+      ],
+      "sources": [
+        {
+          "path": "skill/build-engineering-harness/SKILL.md",
+          "line": 84
+        }
+      ]
+    },
+    {
+      "id": "closeout",
+      "type": "frontend",
+      "label": "项目收尾",
+      "sublabel": "仅项目复盘 + 新人上手文档",
+      "pos": [
+        860,
+        490
+      ],
+      "size": [
+        260,
+        100
+      ],
+      "sources": [
+        {
+          "path": "skill/build-engineering-harness/SKILL.md",
+          "line": 17
+        },
+        {
+          "path": "skill/build-engineering-harness/references/project-closeout-templates.md"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "repository-to-skill",
+      "from": "repository",
+      "to": "skill",
+      "label": "检查证据"
+    },
+    {
+      "id": "method-to-skill",
+      "from": "method",
+      "to": "skill",
+      "label": "应用方法"
+    },
+    {
+      "id": "skill-to-proposal",
+      "from": "skill",
+      "to": "proposal",
+      "label": "只读评估",
+      "fromSide": "top",
+      "toSide": "left",
+      "via": [
+        [
+          565,
+          120
+        ]
+      ]
+    },
+    {
+      "id": "skill-to-changes",
+      "from": "skill",
+      "to": "changes",
+      "label": "用户已批准的范围"
+    },
+    {
+      "id": "skill-to-closeout",
+      "from": "skill",
+      "to": "closeout",
+      "label": "明确提出收尾请求"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "由指令约束 Agent",
+      "items": [
+        "SKILL.md 定义行为；图解说明该契约。",
+        "Python 脚本负责本 Skill 仓库的打包与验证。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "范围随项目调整",
+      "items": [
+        "L1 / L2 / L3 取决于风险和协作需求。",
+        "收尾限定两份文档；其他改进须先获批。"
+      ]
+    }
+  ]
+}
